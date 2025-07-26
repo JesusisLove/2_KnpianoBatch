@@ -1,0 +1,209 @@
+# KNPiano Batch Application
+
+基于Spring Boot + Spring Batch + MyBatis的钢琴课程批处理系统
+
+## 项目概述
+
+KNPiano批处理系统用于矫正钢琴课程的错误级别信息。系统支持手动和自动两种执行模式。
+
+## 技术栈
+
+- **Spring Boot**: 2.7.18
+- **Spring Batch**: 4.3.x
+- **MyBatis**: 2.3.2
+- **MySQL**: 8.0.33
+- **H2**: 内存数据库（Spring Batch元数据）
+- **Maven**: 构建工具
+- **Logback**: 日志框架
+
+## 项目结构(例子)
+
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── com/liu/knpiano/batch/
+│   │       ├── KnpianoBatchApplication.java      # 主启动类
+│   │       ├── config/
+│   │       │   ├── BatchConfiguration.java       # 批处理配置
+│   │       │   └── DatabaseConfiguration.java    # 数据库配置
+│   │       ├── dao/
+│   │       │   └── KNDB1010Dao.java              # 数据访问接口
+│   │       ├── entity/
+│   │       │   └── Lesson.java                   # 课程实体类
+│   │       └── tasklet/
+│   │           └── KNDB1010Tasklet.java          # 业务处理任务
+│   └── resources/
+│       ├── mapper/
+│       │   └── KNDB1010Mapper.xml                # MyBatis映射文件
+│       ├── application.properties                # 应用配置
+│       └── logback-spring.xml                    # 日志配置
+└── pom.xml                                       # Maven配置
+```
+
+## 业务逻辑
+
+### KNDB1010 - 钢琴课程级别矫正
+
+**业务流程：**
+
+1. **数据检查**: 获取排课钢琴错误级别的课程记录
+2. **条件判断**: 如果错误记录数为0，停止处理；如果大于0，执行矫正
+3. **数据矫正**: 更新错误的钢琴级别课程信息
+4. **结果验证**: 验证矫正操作是否成功
+
+**执行条件：**
+- 必须在月末（25:00以后）执行
+- 基准日期必须是月末最后一天
+
+## 配置说明
+
+### 数据库配置
+
+**业务数据库 (MySQL)**
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/KNStudent
+spring.datasource.username=knpiano_user
+spring.datasource.password=knpiano_password
+```
+
+**Spring Batch元数据库 (H2内存)**
+```properties
+spring.batch.datasource.url=jdbc:h2:mem:batch_db
+```
+
+### 日志配置
+
+系统提供多种日志输出：
+- `knpiano-batch.log`: 完整应用日志
+- `knpiano-batch-error.log`: 错误日志
+- `knpiano-batch-batch.log`: 批处理专用日志
+
+## 使用方法
+
+### 编译项目
+
+```bash
+mvn clean package
+```
+
+### 手动执行模式
+
+```bash
+java -jar target/knpiano-batch-1.0.0.jar --job.name=KNDB1010_MANUAL --base.date=20250831
+```
+
+**参数说明：**
+- `--job.name=KNDB1010_MANUAL`: 指定手动执行模式
+- `--base.date=20250831`: 指定基准日期（必须是月末）
+
+### 自动执行模式
+
+```bash
+java -jar target/knpiano-batch-1.0.0.jar --job.name=KNDB1010_AUTO
+```
+
+**参数说明：**
+- `--job.name=KNDB1010_AUTO`: 指定自动执行模式（使用系统当前日期）
+
+## VSCode开发环境设置
+
+### 必需插件
+
+1. **Extension Pack for Java**
+   - Language Support for Java
+   - Debugger for Java
+   - Test Runner for Java
+   - Maven for Java
+
+2. **Spring Boot Extension Pack**
+   - Spring Boot Tools
+   - Spring Initializr Java Support
+   - Spring Boot Dashboard
+
+### 项目导入
+
+1. 打开VSCode
+2. `File` -> `Open Folder` -> 选择项目根目录
+3. VSCode会自动识别Maven项目并下载依赖
+
+### 运行配置
+
+在 `.vscode/launch.json` 中添加运行配置：
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "KNDB1010 Manual",
+            "request": "launch",
+            "mainClass": "com.liu.knpiano.batch.KnpianoBatchApplication",
+            "projectName": "knpiano-batch",
+            "args": ["--job.name=KNDB1010_MANUAL", "--base.date=20250831"]
+        },
+        {
+            "type": "java",
+            "name": "KNDB1010 Auto",
+            "request": "launch",
+            "mainClass": "com.liu.knpiano.batch.KnpianoBatchApplication",
+            "projectName": "knpiano-batch",
+            "args": ["--job.name=KNDB1010_AUTO"]
+        }
+    ]
+}
+```
+
+## 日志示例
+
+### 成功执行日志
+
+```
+2025-01-31 10:30:00.123 [main] INFO  [KNDB1010Tasklet] - ========== KNDB1010 批处理开始执行 ==========
+2025-01-31 10:30:00.124 [main] INFO  [KNDB1010Tasklet] - 批处理参数 - 基准日期: 20250831, 执行模式: MANUAL
+2025-01-31 10:30:00.125 [main] INFO  [KNDB1010Tasklet] - 目标处理月份: 2025-08
+2025-01-31 10:30:00.126 [main] INFO  [KNDB1010Tasklet] - 步骤1: 开始获取排课钢琴错误级别的课程记录...
+2025-01-31 10:30:00.150 [main] INFO  [KNDB1010Tasklet] - 步骤1: 完成 - 发现错误级别课程记录数: 5
+2025-01-31 10:30:00.151 [main] INFO  [KNDB1010Tasklet] - 步骤2: 开始执行钢琴级别课程数据矫正...
+2025-01-31 10:30:00.180 [main] INFO  [KNDB1010Tasklet] - 步骤2: 完成 - 成功矫正课程记录数: 5
+2025-01-31 10:30:00.181 [main] INFO  [KNDB1010Tasklet] - 验证: 开始验证矫正结果...
+2025-01-31 10:30:00.190 [main] INFO  [KNDB1010Tasklet] - 验证: 成功 - 所有错误级别课程已完成矫正
+2025-01-31 10:30:00.191 [main] INFO  [KNDB1010Tasklet] - ========== KNDB1010 批处理执行完成 ==========
+2025-01-31 10:30:00.191 [main] INFO  [KNDB1010Tasklet] - 批处理名称: KNDB1010
+2025-01-31 10:30:00.191 [main] INFO  [KNDB1010Tasklet] - 执行状态: SUCCESS
+2025-01-31 10:30:00.191 [main] INFO  [KNDB1010Tasklet] - 处理数据条数: 5
+2025-01-31 10:30:00.191 [main] INFO  [KNDB1010Tasklet] - 更新数据条数: 5
+2025-01-31 10:30:00.191 [main] INFO  [KNDB1010Tasklet] - 执行时间: 68 ms (0.068 秒)
+```
+
+## 错误处理
+
+### 常见错误及解决方案
+
+1. **日期验证错误**
+   ```
+   错误: 该batch执行的时间必须是月末
+   解决: 确保基准日期是月末最后一天
+   ```
+
+2. **数据库连接错误**
+   ```
+   错误: 无法连接到MySQL数据库
+   解决: 检查数据库连接配置和网络连接
+   ```
+
+3. **SQL执行错误**
+   ```
+   错误: 视图不存在
+   解决: 确认数据库中存在相关视图对象
+   ```
+
+## 监控和维护
+
+### 日志监控
+
+- 监控错误日志文件: `logs/knpiano-batch-error.log`
+- 查看批处理执行日志: `logs/knpiano-batch-batch.log`
+
+### 性能优化
