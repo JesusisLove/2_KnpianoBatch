@@ -1,0 +1,44 @@
+2025-07-27 00:16:20.600 [main] INFO  [com.liu.knbatch.KnpianoBatchApplication] - Starting KnpianoBatchApplication using Java 23 on ryuugiminnoMac-Studio.local with PID 24489 (/Users/kazuyoshi/Documents/KnPianoBatchRepository/KnpianoBatch/target/classes started by kazuyoshi in /Users/kazuyoshi/Documents/KnPianoBatchRepository/KnpianoBatch)
+2025-07-27 00:16:20.601 [main] DEBUG [com.liu.knbatch.KnpianoBatchApplication] - Running with Spring Boot v2.7.18, Spring v5.3.31
+2025-07-27 00:16:20.601 [main] INFO  [com.liu.knbatch.KnpianoBatchApplication] - The following 1 profile is active: "batch"
+2025-07-27 00:16:21.158 [main] INFO  [o.s.b.c.r.support.JobRepositoryFactoryBean] - No database type set, using meta data indicating: MYSQL
+2025-07-27 00:16:21.203 [main] INFO  [o.s.batch.core.launch.support.SimpleJobLauncher] - No TaskExecutor has been set, defaulting to synchronous executor.
+2025-07-27 00:16:21.235 [main] INFO  [com.liu.knbatch.KnpianoBatchApplication] - Started KnpianoBatchApplication in 0.812 seconds (JVM running for 0.948)
+2025-07-27 00:16:21.270 [main] INFO  [o.s.batch.core.launch.support.SimpleJobLauncher] - Job: [SimpleJob: [name=KNDB1010]] launched with the following parameters: [{baseDate=20250731, jobMode=MANUAL, timestamp=1753542981237}]
+2025-07-27 00:16:21.280 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - *************************************************
+2025-07-27 00:16:21.280 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业开始执行
+2025-07-27 00:16:21.280 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业名称: KNDB1010
+2025-07-27 00:16:21.280 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 执行模式: MANUAL
+2025-07-27 00:16:21.280 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 基准日期: 20250731
+2025-07-27 00:16:21.280 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业ID: 3
+2025-07-27 00:16:21.280 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 开始时间: Sun Jul 27 00:16:21 JST 2025
+2025-07-27 00:16:21.280 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - *************************************************
+2025-07-27 00:16:21.288 [main] INFO  [o.springframework.batch.core.job.SimpleStepHandler] - Executing step: [KNDB1010_STEP]
+2025-07-27 00:16:21.293 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - ========== KNDB1010 批处理开始执行 ==========
+2025-07-27 00:16:21.293 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 批处理参数 - 基准日期: 20250731, 执行模式: MANUAL
+2025-07-27 00:16:21.293 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 目标处理月份: 2025-07
+2025-07-27 00:16:21.293 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 步骤1: 开始获取排课钢琴错误级别的课程记录...
+2025-07-27 00:16:21.303 [main] DEBUG [c.l.k.d.K.selectIncorrectPianoLevelLessons] - ==>  Preparing: SELECT lsn.* FROM v_info_lesson lsn WHERE 1 = 1 AND NOT EXISTS ( SELECT 1 FROM v_latest_subject_info_from_doc_tmp doc WHERE doc.stu_id = lsn.stu_id AND doc.subject_id = lsn.subject_id AND doc.subject_sub_id = lsn.subject_sub_id ) AND LEFT(lsn.schedual_date, 7) = ? ORDER BY lsn.stu_id, lsn.subject_id, lsn.schedual_date
+2025-07-27 00:16:21.311 [main] DEBUG [c.l.k.d.K.selectIncorrectPianoLevelLessons] - ==> Parameters: 2025-07(String)
+2025-07-27 00:16:21.324 [main] DEBUG [c.l.k.d.K.selectIncorrectPianoLevelLessons] - <==      Total: 0
+2025-07-27 00:16:21.324 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 步骤1: 完成 - 发现错误级别课程记录数: 0
+2025-07-27 00:16:21.324 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 未发现错误的钢琴级别课程记录，批处理正常结束
+2025-07-27 00:16:21.324 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - ========== KNDB1010 批处理执行完成 ==========
+2025-07-27 00:16:21.325 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 批处理名称: KNDB1010
+2025-07-27 00:16:21.325 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 执行状态: SUCCESS
+2025-07-27 00:16:21.325 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 处理数据条数: 0
+2025-07-27 00:16:21.325 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 更新数据条数: 0
+2025-07-27 00:16:21.325 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 执行时间: 31 ms (0.031 秒)
+2025-07-27 00:16:21.326 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 执行结束时间: 2025-07-27 00:16:21
+2025-07-27 00:16:21.326 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - ================================================
+2025-07-27 00:16:21.333 [main] INFO  [org.springframework.batch.core.step.AbstractStep] - Step: [KNDB1010_STEP] executed in 44ms
+2025-07-27 00:16:21.336 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - *************************************************
+2025-07-27 00:16:21.336 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业执行完成
+2025-07-27 00:16:21.336 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业名称: KNDB1010
+2025-07-27 00:16:21.337 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业ID: 3
+2025-07-27 00:16:21.337 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 执行状态: COMPLETED
+2025-07-27 00:16:21.337 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 开始时间: Sun Jul 27 00:16:21 JST 2025
+2025-07-27 00:16:21.337 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 结束时间: Sun Jul 27 00:16:21 JST 2025
+2025-07-27 00:16:21.337 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 执行耗时: 60 ms (0.06 秒)
+2025-07-27 00:16:21.337 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - *************************************************
+2025-07-27 00:16:21.339 [main] INFO  [o.s.batch.core.launch.support.SimpleJobLauncher] - Job: [SimpleJob: [name=KNDB1010]] completed with the following parameters: [{baseDate=20250731, jobMode=MANUAL, timestamp=1753542981237}] and the following status: [COMPLETED] in 60ms
