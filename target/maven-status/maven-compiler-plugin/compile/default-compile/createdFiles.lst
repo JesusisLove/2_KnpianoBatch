@@ -1,6 +1,0 @@
-com/liu/knbatch/tasklet/KNDB1010Tasklet.class
-com/liu/knbatch/dao/KNDB1010Dao.class
-com/liu/knbatch/entity/Lesson.class
-com/liu/knbatch/KnpianoBatchApplication.class
-com/liu/knbatch/config/BatchConfiguration$KNDB1010JobExecutionListener.class
-com/liu/knbatch/config/BatchConfiguration.class
