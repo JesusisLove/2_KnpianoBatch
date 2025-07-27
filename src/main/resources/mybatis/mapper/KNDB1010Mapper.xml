@@ -16,7 +16,11 @@
         <result property="updateTime" column="update_time"/>
     </resultMap>
 
-    <!-- 获取排课钢琴错误级别的课程记录用的SQL -->
+    <!-- 获取排课钢琴错误级别的课程记录用的SQL 
+        当抽出来的结果集里有记录时，就表示有错误的钢琴级别记录，错误的Timing往往是次月要上新的钢琴级别（比如当月学钢琴5级课程，到了次月就学6级
+        但是，老师在当前月的最后一周排课的学生排到了次月的某个星期几（仍然是5级，实际上下月学生要学6级），导致下月的课程出现了两个级别的课（第一周5级，第二周以后6级）
+        排在下月的5级的课程是错误级别的课程，执行该batch，就是将第一周的错误的5级课程改成正确的6级课程
+    -->
     <select id="selectIncorrectPianoLevelLessons" parameterType="string" resultMap="LessonResultMap">
         SELECT lsn.* 
         FROM v_info_lesson lsn
