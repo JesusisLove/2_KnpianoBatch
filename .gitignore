@@ -34,8 +34,10 @@ buildNumber.properties
 *.nar
 hs_err_pid*
 
-# 日志文件
+# 日志文件和日志目录
 logs/
+logs/*
+logs/**/*
 *.log
 *.log.*
 
