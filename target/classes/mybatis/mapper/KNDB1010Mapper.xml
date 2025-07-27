@@ -70,8 +70,7 @@
                    AND doc1.subject_id = lsn1.subject_id
         ) doc ON lsn.stu_id = doc.stu_id 
              AND lsn.subject_id = doc.subject_id
-        SET lsn.subject_sub_id = doc.subject_sub_id,
-            lsn.update_time = NOW()
+        SET lsn.subject_sub_id = doc.subject_sub_id
         WHERE 1 = 1 
         AND NOT EXISTS (
             SELECT 1 

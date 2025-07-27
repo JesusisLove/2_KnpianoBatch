@@ -12,7 +12,6 @@ import org.springframework.batch.core.launch.JobLauncher;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 
 @SpringBootApplication
 @EnableBatchProcessing
@@ -29,7 +28,6 @@ public class KnpianoBatchApplication {
         try {
             String jobName = getJobName(args);
             String baseDate = getBaseDate(args, jobName);
-            validateBaseDate(baseDate);
             executeJob(context, jobName, baseDate);
         } catch (Exception e) {
             System.err.println("批处理执行失败: " + e.getMessage());
@@ -61,24 +59,6 @@ public class KnpianoBatchApplication {
             throw new IllegalArgumentException("手动执行模式缺少必要参数 --base.date=yyyyMMdd");
         } else {
             throw new IllegalArgumentException("不支持的作业名称: " + jobName);
-        }
-    }
-
-    private static void validateBaseDate(String baseDate) {
-        try {
-            LocalDate date = LocalDate.parse(baseDate, DATE_FORMATTER);
-            LocalDate lastDayOfMonth = date.with(TemporalAdjusters.lastDayOfMonth());
-            
-            if (!date.equals(lastDayOfMonth)) {
-                throw new IllegalArgumentException(
-                    String.format("该batch执行的时间必须是月末。输入日期: %s, 该月月末: %s", 
-                                baseDate, lastDayOfMonth.format(DATE_FORMATTER)));
-            }
-        } catch (Exception e) {
-            if (e instanceof IllegalArgumentException) {
-                throw e;
-            }
-            throw new IllegalArgumentException("日期格式错误，必须是yyyyMMdd格式: " + baseDate);
         }
     }
 

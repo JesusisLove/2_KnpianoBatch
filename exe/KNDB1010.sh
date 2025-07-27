@@ -8,13 +8,13 @@ echo "========================="
 # 检查参数
 if [ $# -eq 0 ]; then
     echo "使用方法:"
-    echo "  $0 auto                    - 自动执行模式"
+    echo "  $0 auto   YYYYMMDD         - 自动执行模式"
     echo "  $0 manual YYYYMMDD         - 手动执行模式"
     echo "  $0 test                    - 测试模式（使用月末日期）"
     echo ""
     echo "示例:"
-    echo "  $0 auto"
-    echo "  $0 manual 20250831"
+    echo "  $0 auto   20250801"
+    echo "  $0 manual 20250731"
     echo "  $0 test"
     exit 1
 fi
@@ -46,15 +46,43 @@ fi
 echo "启动批处理..."
 
 if [ "$1" = "auto" ]; then
-    echo "执行模式: 自动"
-    mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1010_AUTO"
+    # 自动模式：获取当前系统日期所在月份的第一日
+    if command -v gdate >/dev/null 2>&1; then
+        # macOS 使用 gdate (需要安装 brew install coreutils)
+        BASE_DATE=$(gdate +'%Y%m01')
+    else
+        # Linux 使用 date
+        BASE_DATE=$(date +'%Y%m01')
+    fi
+    echo "执行模式: 自动, 基准日期: $BASE_DATE"
+    mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1010_AUTO --base.date=$BASE_DATE"
+
 elif [ "$1" = "manual" ]; then
-    if [ -z "$2" ]; then
+    # 判断一个字符串是否为空（长度为0）
+    if [ -z "$2" ]; then 
         echo "错误: 手动模式需要指定日期参数 (YYYYMMDD)"
         exit 1
     fi
-    echo "执行模式: 手动, 基准日期: $2"
-    mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1010_MANUAL --base.date=$2"
+    
+    # 手动模式：从输入参数中提取年月，将月份加1，得到下个月的第一日
+    INPUT_DATE="$2"
+    YEAR=${INPUT_DATE:0:4}
+    MONTH=${INPUT_DATE:4:2}
+    
+    # 将月份加1，处理12月到次年1月的情况
+    NEXT_MONTH=$((10#$MONTH + 1))
+    if [ $NEXT_MONTH -gt 12 ]; then
+        NEXT_MONTH=1
+        YEAR=$((YEAR + 1))
+    fi
+    
+    # 格式化月份为两位数
+    NEXT_MONTH_STR=$(printf "%02d" $NEXT_MONTH)
+    BASE_DATE="${YEAR}${NEXT_MONTH_STR}01"
+    
+    echo "执行模式: 手动, 输入日期: $INPUT_DATE, 基准日期: $BASE_DATE"
+    mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1010_MANUAL --base.date=$BASE_DATE"
+
 elif [ "$1" = "test" ]; then
     # 获取当前月的最后一天进行测试
     if command -v gdate >/dev/null 2>&1; then
@@ -66,6 +94,7 @@ elif [ "$1" = "test" ]; then
     fi
     echo "执行模式: 测试, 使用月末日期: $LAST_DAY"
     mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1010_MANUAL --base.date=$LAST_DAY"
+
 else
     echo "错误: 不支持的执行模式 '$1'"
     echo "支持的模式: auto, manual, test"
