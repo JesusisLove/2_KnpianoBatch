@@ -1,4 +1,3 @@
-// ===== 1. 修改后的主应用类 =====
 package com.liu.knbatch;
 
 import org.mybatis.spring.annotation.MapperScan;
@@ -76,26 +75,28 @@ public class KnpianoBatchApplication {
         System.setProperty("spring.profiles.active", "prod");
         System.out.println("启动 KnPiano Batch 管理系统...");
         System.out.println("系统将持续运行，等待定时任务执行");
-        System.out.println("定时任务：每月最后一天25:00执行KNDB1010批处理");
+        System.out.println("定时任务配置:");
+        System.out.println("  - KNDB1010: 每月1号凌晨1:00执行钢琴课程级别矫正");
+        System.out.println("  - KNDB1020: 每周日凌晨2:00执行学生信息同步");
         
         SpringApplication.run(KnpianoBatchApplication.class, args);
         // 应用会持续运行，不会退出
     }
 
-    // ... 其他方法保持不变 ...
     private static String getJobName(String[] args) {
         for (String arg : args) {
             if (arg.startsWith("--job.name=")) {
                 return arg.substring("--job.name=".length());
             }
         }
-        throw new IllegalArgumentException("缺少必要参数 --job.name，支持的值: KNDB1010_MANUAL, KNDB1010_AUTO");
+        throw new IllegalArgumentException("缺少必要参数 --job.name，支持的值: " +
+                "KNDB1010_MANUAL, KNDB1010_AUTO, KNDB1020_MANUAL, KNDB1020_AUTO");
     }
 
     private static String getBaseDate(String[] args, String jobName) {
-        if ("KNDB1010_AUTO".equals(jobName)) {
+        if (jobName.endsWith("_AUTO")) {
             return LocalDate.now().format(DATE_FORMATTER);
-        } else if ("KNDB1010_MANUAL".equals(jobName)) {
+        } else if (jobName.endsWith("_MANUAL")) {
             for (String arg : args) {
                 if (arg.startsWith("--base.date=")) {
                     return arg.substring("--base.date=".length());
@@ -112,19 +113,30 @@ public class KnpianoBatchApplication {
         JobLauncher jobLauncher = context.getBean(JobLauncher.class);
         
         Job job;
+        String businessModule;
+        
+        // 根据作业名称选择对应的Job和业务模块
         if ("KNDB1010_MANUAL".equals(jobName) || "KNDB1010_AUTO".equals(jobName)) {
             job = context.getBean("kndb1010Job", Job.class);
+            businessModule = "KNDB1010";
+        } else if ("KNDB1020_MANUAL".equals(jobName) || "KNDB1020_AUTO".equals(jobName)) {
+            job = context.getBean("kndb1020Job", Job.class);
+            businessModule = "KNDB1020";
         } else {
-            throw new IllegalArgumentException("未找到对应的作业配置: " + jobName);
+            throw new IllegalArgumentException("未找到对应的作业配置: " + jobName + 
+                "，支持的值: KNDB1010_MANUAL, KNDB1010_AUTO, KNDB1020_MANUAL, KNDB1020_AUTO");
         }
 
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("baseDate", baseDate)
                 .addString("jobMode", jobName.contains("MANUAL") ? "MANUAL" : "AUTO")
+                .addString("businessModule", businessModule)
                 .addLong("timestamp", System.currentTimeMillis())
                 .toJobParameters();
 
-        System.out.println("开始执行批处理作业: " + jobName + ", 基准日期: " + baseDate);
+        System.out.println("开始执行批处理作业: " + jobName);
+        System.out.println("业务模块: " + businessModule);
+        System.out.println("基准日期: " + baseDate);
         jobLauncher.run(job, jobParameters);
         System.out.println("批处理作业执行完成");
     }

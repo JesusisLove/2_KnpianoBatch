@@ -1,0 +1,135 @@
+# KnPiano Batch 配置文件使用说明
+
+## 📁 配置文件结构
+
+```
+src/main/resources/
+├── application.properties          # 主配置文件（通用配置）
+├── application-dev.properties      # 开发环境配置
+├── application-batch.properties    # 批处理环境配置
+├── application-prod.properties     # 生产环境配置
+└── application-test.properties     # 测试环境配置
+```
+
+## 🎯 各环境配置说明
+
+### 1. **application.properties** - 主配置文件
+- **用途**: 包含所有环境通用的配置
+- **内容**: 应用名称、MyBatis配置、通用数据库配置等
+- **特点**: 被所有环境继承的基础配置
+
+### 2. **application-dev.properties** - 开发环境
+- **用途**: 本地开发和调试
+- **特点**: 
+  - 详细的DEBUG日志
+  - 使用开发数据库
+  - 相对路径的日志文件
+  - 较小的数据库连接池
+
+### 3. **application-batch.properties** - 批处理环境
+- **用途**: 手动执行批处理作业
+- **特点**: 
+  - 适中级别的日志
+  - 批处理专用配置
+  - 支持超时和重试设置
+
+### 4. **application-prod.properties** - 生产环境
+- **用途**: 生产环境部署和定时任务
+- **特点**: 
+  - 精简的INFO级别日志
+  - 使用环境变量配置敏感信息
+  - 绝对路径的日志文件
+  - 较大的数据库连接池
+  - 生产级别的超时和重试配置
+
+### 5. **application-test.properties** - 测试环境
+- **用途**: 单元测试和集成测试
+- **特点**: 
+  - 使用测试数据库
+  - 详细的测试日志
+  - 快速失败配置
+
+## 🚀 使用方法
+
+### 方法1: 通过代码设置（当前方式）
+```java
+// 在 KnpianoBatchApplication.java 中
+System.setProperty("spring.profiles.active", "dev");      // 开发环境
+System.setProperty("spring.profiles.active", "batch");    // 批处理环境
+System.setProperty("spring.profiles.active", "prod");     // 生产环境
+```
+
+### 方法2: 通过JVM参数设置
+```bash
+# 开发环境
+java -jar knpiano-batch.jar -Dspring.profiles.active=dev
+
+# 批处理环境
+java -jar knpiano-batch.jar -Dspring.profiles.active=batch --job.name=KNDB1010_MANUAL --base.date=20250801
+
+# 生产环境
+java -jar knpiano-batch.jar -Dspring.profiles.active=prod
+```
+
+### 方法3: 通过程序参数设置
+```bash
+# 开发环境
+java -jar knpiano-batch.jar --spring.profiles.active=dev
+
+# 生产环境
+java -jar knpiano-batch.jar --spring.profiles.active=prod
+```
+
+### 方法4: 通过环境变量设置
+```bash
+# 设置环境变量
+export SPRING_PROFILES_ACTIVE=prod
+java -jar knpiano-batch.jar
+```
+
+## 🔧 生产环境部署配置
+
+### 1. 数据库配置
+生产环境建议使用环境变量配置敏感信息：
+```bash
+export DB_USERNAME=batch_prod_user
+export DB_PASSWORD=your_secure_password
+export DB_URL=jdbc:mysql://prod-db-server:3306/KNStudent_PROD
+```
+
+### 2. 日志目录创建
+```bash
+# 创建日志目录
+sudo mkdir -p /var/log/knpiano-batch
+sudo chown knpiano:knpiano /var/log/knpiano-batch
+```
+
+### 3. 启动脚本示例
+```bash
+#!/bin/bash
+# 生产环境启动脚本
+export SPRING_PROFILES_ACTIVE=prod
+export DB_USERNAME=batch_prod_user
+export DB_PASSWORD=your_secure_password
+export DB_URL=jdbc:mysql://prod-db-server:3306/KNStudent_PROD
+
+nohup java -jar /opt/knpiano-batch/knpiano-batch.jar > /var/log/knpiano-batch/startup.log 2>&1 &
+```
+
+## 📊 环境对比表
+
+| 配置项 | dev | batch | prod | test |
+|--------|-----|-------|------|------|
+| 日志级别 | DEBUG | INFO | INFO | DEBUG |
+| 数据库连接池 | 10 | 15 | 30 | 5 |
+| 日志路径 | 相对路径 | 相对路径 | 绝对路径 | target/test-logs |
+| 超时时间 | 默认 | 1小时 | 2小时 | 1分钟 |
+| 重试次数 | 默认 | 3次 | 5次 | 1次 |
+| 调试模式 | 启用 | 启用 | 禁用 | 启用 |
+
+## ⚠️ 注意事项
+
+1. **敏感信息**: 生产环境的数据库密码等敏感信息建议使用环境变量
+2. **日志路径**: 生产环境需要确保日志目录存在且有写入权限
+3. **数据库**: 不同环境使用不同的数据库，避免数据混乱
+4. **优先级**: 代码中的 `System.setProperty()` 优先级最高，会覆盖其他设置方式
