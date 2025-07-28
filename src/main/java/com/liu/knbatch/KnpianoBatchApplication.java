@@ -1,3 +1,4 @@
+// ===== 1. 修改后的主应用类 =====
 package com.liu.knbatch;
 
 import org.mybatis.spring.annotation.MapperScan;
@@ -5,6 +6,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -15,13 +17,42 @@ import java.time.format.DateTimeFormatter;
 
 @SpringBootApplication
 @EnableBatchProcessing
+@EnableScheduling  // 启用定时任务
 @MapperScan("com.liu.knbatch.dao")
 public class KnpianoBatchApplication {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     public static void main(String[] args) {
-        System.setProperty("spring.profiles.active", "batch");
+        // 检查是否为手动执行模式
+        boolean isManualMode = hasManualJobParameter(args);
+        
+        if (isManualMode) {
+            // 手动执行模式：执行完退出
+            executeManualJob(args);
+        } else {
+            // 服务模式：持续运行，等待定时任务
+            runAsService(args);
+        }
+    }
+    
+    /**
+     * 检查是否为手动执行模式
+     */
+    private static boolean hasManualJobParameter(String[] args) {
+        for (String arg : args) {
+            if (arg.startsWith("--job.name=")) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * 手动执行模式
+     */
+    private static void executeManualJob(String[] args) {
+        System.setProperty("spring.profiles.active", "dev,batch");
         
         ConfigurableApplicationContext context = SpringApplication.run(KnpianoBatchApplication.class, args);
         
@@ -37,7 +68,21 @@ public class KnpianoBatchApplication {
             context.close();
         }
     }
+    
+    /**
+     * 服务模式：即，生产环境的持续运行，等待定时任务
+     */
+    private static void runAsService(String[] args) {
+        System.setProperty("spring.profiles.active", "prod");
+        System.out.println("启动 KnPiano Batch 管理系统...");
+        System.out.println("系统将持续运行，等待定时任务执行");
+        System.out.println("定时任务：每月最后一天25:00执行KNDB1010批处理");
+        
+        SpringApplication.run(KnpianoBatchApplication.class, args);
+        // 应用会持续运行，不会退出
+    }
 
+    // ... 其他方法保持不变 ...
     private static String getJobName(String[] args) {
         for (String arg : args) {
             if (arg.startsWith("--job.name=")) {

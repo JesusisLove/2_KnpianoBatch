@@ -1,0 +1,91 @@
+KnpianoBatch/                                   # 项目根目录
+├── pom.xml                                     # Maven配置文件
+├── README.md                                   # 项目说明文档
+├── .gitignore                                  # Git忽略文件配置
+├── exe/                                        # 执行脚本目录
+│   ├── KNDB1010.sh                            # 批处理执行脚本
+│   └── logs/                                   # 脚本执行日志（可选）
+├── docs/                                       # 项目文档（可选）
+│   ├── batch-job-list.md                      # 批处理作业清单
+│   ├── database-schema.md                     # 数据库表结构说明
+│   └── deployment-guide.md                    # 部署指南
+├── src/
+│   ├── main/
+│   │   ├── java/com/liu/knbatch/
+│   │   │   ├── KnpianoBatchApplication.java   # Spring Boot主启动类
+│   │   │   ├── annotation/                    # 自定义注解
+│   │   │   │   └── BatchJob.java             # 批处理作业注解
+│   │   │   ├── config/                        # 配置类
+│   │   │   │   ├── AbstractBatchJobConfiguration.java  # 抽象基础配置
+│   │   │   │   ├── BatchJobAutoConfiguration.java      # 自动扫描配置
+│   │   │   │   ├── DatabaseConfiguration.java          # 数据库配置
+│   │   │   │   └── MyBatisConfiguration.java           # MyBatis配置
+│   │   │   ├── modules/                       # 所有Job配置类
+│   │   │   │   ├── KNDB1010JobConfiguration.java
+│   │   │   │   ├── KNDB1020JobConfiguration.java
+│   │   │   │   ├── KNDB2010JobConfiguration.java
+│   │   │   │   └── ...
+│   │   │   ├── tasklet/                       # 所有Tasklet实现
+│   │   │   │   ├── KNDB1010Tasklet.java
+│   │   │   │   ├── KNDB1020Tasklet.java
+│   │   │   │   ├── KNDB2010Tasklet.java
+│   │   │   │   └── ...
+│   │   │   ├── dao/                           # 数据访问接口
+│   │   │   │   ├── KNDB1010Dao.java
+│   │   │   │   ├── KNDB1020Dao.java
+│   │   │   │   ├── KNDB2010Dao.java
+│   │   │   │   └── ...
+│   │   │   ├── entity/                        # 实体类
+│   │   │   │   ├── Lesson.java               # 课程实体
+│   │   │   │   ├── Student.java              # 学生实体
+│   │   │   │   ├── SubjectInfo.java          # 科目信息实体
+│   │   │   │   ├── BatchResult.java          # 批处理结果实体
+│   │   │   │   └── ...
+│   │   │   ├── listener/                      # 监听器
+│   │   │   │   ├── CommonJobExecutionListener.java    # 通用作业监听器
+│   │   │   │   └── CommonStepExecutionListener.java   # 通用步骤监听器（可选）
+│   │   │   ├── service/                       # 业务服务类（可选）
+│   │   │   │   ├── BatchCommonService.java   # 批处理通用服务
+│   │   │   │   └── ValidationService.java    # 数据校验服务
+│   │   │   ├── util/                          # 工具类
+│   │   │   │   ├── DateUtil.java             # 日期工具
+│   │   │   │   ├── BatchUtil.java            # 批处理工具
+│   │   │   │   └── LogUtil.java              # 日志工具
+│   │   │   └── exception/                     # 异常类
+│   │   │       ├── BatchException.java       # 批处理异常
+│   │   │       └── DataValidationException.java  # 数据校验异常
+│   │   └── resources/
+│   │       ├── application.yml                # 主配置文件
+│   │       ├── application-dev.yml            # 开发环境配置
+│   │       ├── application-test.yml           # 测试环境配置
+│   │       ├── application-prod.yml           # 生产环境配置
+│   │       ├── logback-spring.xml             # 日志配置
+│   │       ├── mybatis/
+│   │       │   ├── mybatis-config.xml         # MyBatis全局配置
+│   │       │   └── mapper/                    # SQL映射文件
+│   │       │       ├── KNDB1010Mapper.xml
+│   │       │       ├── KNDB1020Mapper.xml
+│   │       │       ├── KNDB2010Mapper.xml
+│   │       │       └── ...
+│   │       └── sql/                           # SQL脚本（可选）
+│   │           ├── schema.sql                 # 表结构脚本
+│   │           ├── data.sql                   # 初始化数据脚本
+│   │           └── batch-tables.sql           # Spring Batch表结构
+│   └── test/
+│       ├── java/com/liu/knbatch/
+│       │   ├── KnpianoBatchApplicationTest.java
+│       │   ├── tasklet/                       # Tasklet单元测试
+│       │   │   ├── KNDB1010TaskletTest.java
+│       │   │   └── ...
+│       │   ├── dao/                           # DAO集成测试
+│       │   │   ├── KNDB1010DaoTest.java
+│       │   │   └── ...
+│       │   └── integration/                   # 集成测试
+│       │       ├── KNDB1010IntegrationTest.java
+│       │       └── ...
+│       └── resources/
+│           ├── application-test.yml           # 测试专用配置
+│           └── test-data/                     # 测试数据
+│               ├── test-lesson.sql
+│               └── test-student.sql
+└── target/                                     # Maven构建输出目录（.gitignore忽略）
