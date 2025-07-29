@@ -48,8 +48,9 @@ public class KNDB1010Scheduled {
      * - 例如：8月1日凌晨1:00执行，处理8月份的课程数据
      */
     // @Scheduled(cron = "0 0 1 1 * ?")
-      @Scheduled(cron = "0 15 1 29 7 ?")
-    public void executeKNDB1010Job() {
+    // @Scheduled(cron = "0 30 * 29 7 ?")
+    @Scheduled(cron = "0 */5 * * * ?")
+      public void executeKNDB1010Job() {
         try {
             LocalDate currentDate = LocalDate.now();
             String baseDate = currentDate.format(DATE_FORMATTER);

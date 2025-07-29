@@ -49,9 +49,13 @@ public class KnpianoBatchApplication {
     
     /**
      * 手动执行模式
+     * 使用开发环境配置，适合本地开发和批处理测试
      */
     private static void executeManualJob(String[] args) {
-        System.setProperty("spring.profiles.active", "dev,batch");
+        System.setProperty("spring.profiles.active", "dev");
+        System.out.println("=== 手动执行模式 ===");
+        System.out.println("使用环境: 开发环境 (dev)");
+        System.out.println("适用于: 本地开发、功能测试、问题排查");
         
         ConfigurableApplicationContext context = SpringApplication.run(KnpianoBatchApplication.class, args);
         
@@ -69,15 +73,26 @@ public class KnpianoBatchApplication {
     }
     
     /**
-     * 服务模式：即，生产环境的持续运行，等待定时任务
+     * 自动执行模式：持续运行，等待定时任务
+     * 使用生产环境配置，适合生产部署和定时任务执行
      */
     private static void runAsService(String[] args) {
         System.setProperty("spring.profiles.active", "prod");
+        System.out.println("=== 自动执行模式 ===");
+        // System.out.println("使用环境: 生产环境 (prod)");
+        // System.out.println("适用于: 生产部署、定时任务执行");
+        // System.out.println("");
         System.out.println("启动 KnPiano Batch 管理系统...");
         System.out.println("系统将持续运行，等待定时任务执行");
-        System.out.println("定时任务配置:");
+        System.out.println("");
+        System.out.println("已注册的定时任务:");
         System.out.println("  - KNDB1010: 每月1号凌晨1:00执行钢琴课程级别矫正");
         System.out.println("  - KNDB1020: 每周日凌晨2:00执行学生信息同步");
+        System.out.println("");
+        System.out.println("日志查看:");
+        System.out.println("  - 主日志: tail -f /var/log/knpiano-batch/knpiano-batch.log");
+        System.out.println("  - 错误日志: tail -f /var/log/knpiano-batch/knpiano-batch-error.log");
+        System.out.println("=====================================");
         
         SpringApplication.run(KnpianoBatchApplication.class, args);
         // 应用会持续运行，不会退出
@@ -137,6 +152,7 @@ public class KnpianoBatchApplication {
         System.out.println("开始执行批处理作业: " + jobName);
         System.out.println("业务模块: " + businessModule);
         System.out.println("基准日期: " + baseDate);
+        System.out.println("执行环境: 开发环境 (dev)");
         jobLauncher.run(job, jobParameters);
         System.out.println("批处理作业执行完成");
     }
