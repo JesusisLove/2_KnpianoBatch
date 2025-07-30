@@ -9,15 +9,16 @@ import javax.annotation.PostConstruct;
 
 /**
  * Spring Batch 主配置类
- * 导入各个业务模块的批处理配置
+ * 导入各个业务模块的批处理配置和动态调度配置
  * 
  * @author Liu
  * @version 1.0.0
  */
 @Configuration
 @Import({
-    KNDB1010Config.class,  // 钢琴课程级别矫正配置
-    KNDB1020Config.class   // 学生信息同步配置
+    KNDB1010Config.class,     // 钢琴课程级别矫正配置
+    KNDB1020Config.class,     // 学生信息同步配置
+    SchedulerConfig.class     // 动态定时任务配置
 })
 public class BatchConfiguration {
     
@@ -34,6 +35,10 @@ public class BatchConfiguration {
         logger.info("  - BatchConfiguration.java (主配置)");
         logger.info("  - KNDB1010Config.java (钢琴课程级别矫正)");
         logger.info("  - KNDB1020Config.java (学生信息同步)");
+        logger.info("  - SchedulerConfig.java (动态定时任务配置)");
+        logger.info("动态功能:");
+        logger.info("  - 手动执行: 基于XML配置动态调用");
+        logger.info("  - 定时执行: 基于XML配置动态注册");
         logger.info("========================================");
     }
 }
