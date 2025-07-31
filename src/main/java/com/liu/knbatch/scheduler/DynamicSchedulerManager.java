@@ -86,7 +86,10 @@ public class DynamicSchedulerManager implements SchedulingConfigurer {
             // 注册定时任务
             taskRegistrar.addTriggerTask(task, cronTrigger);
             
-            String cronDesc = parseCronDescription(jobInfo.getCronExpression());
+            // 使用XML配置中的描述，而不是硬编码
+            String cronDesc = jobInfo.getCronDescription() != null ? 
+                              jobInfo.getCronDescription() : jobInfo.getCronExpression();
+            
             logger.info("已注册定时任务: {} - {} ({})", 
                     jobInfo.getJobId(), jobInfo.getDescription(), cronDesc);
             
@@ -105,12 +108,16 @@ public class DynamicSchedulerManager implements SchedulingConfigurer {
         try {
             LocalDate currentDate = LocalDate.now();
             String baseDate = currentDate.format(DATE_FORMATTER);
-            String targetMonthStr = currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
             
             logger.info("=== {} 定时批处理开始执行 ===", jobId);
             logger.info("业务模块: {}", description);
             logger.info("执行时间: {}", java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            logger.info("处理目标: {}", getProcessingTarget(jobId, targetMonthStr));
+            
+            // 使用XML配置中的目标描述，消除硬编码
+            String targetDescription = jobInfo.getTargetDescription() != null ? 
+                                       jobInfo.getTargetDescription() : description;
+            logger.info("处理目标: [{}] {}", jobId, targetDescription);
+            
             logger.info("基准日期: {}", baseDate);
             
             // 动态获取Job实例
@@ -137,53 +144,6 @@ public class DynamicSchedulerManager implements SchedulingConfigurer {
             
         } catch (Exception e) {
             logger.error("=== {} 定时批处理执行异常 ===", jobId, e);
-        }
-    }
-    
-    /**
-     * 根据作业ID获取处理目标描述
-     */
-    private String getProcessingTarget(String jobId, String targetMonth) {
-        switch (jobId) {
-            case "KNDB1010":
-                return targetMonth + " 月份的钢琴课程级别矫正";
-            case "KNDB1020":
-                return "学生信息同步";
-            case "KNDB1030":
-                return targetMonth + " 月份的教师排课管理";
-            case "KNDB1040":
-                return targetMonth + " 月份的学费结算处理";
-            case "KNDB1050":
-                return targetMonth + " 月份的报表生成";
-            default:
-                return jobId + " 业务处理";
-        }
-    }
-    
-    /**
-     * 解析Cron表达式为人类可读的描述
-     */
-    private String parseCronDescription(String cronExpression) {
-        if (cronExpression == null || cronExpression.trim().isEmpty()) {
-            return "未设置定时";
-        }
-        
-        // 常见的Cron表达式解析
-        switch (cronExpression.trim()) {
-            case "0 0 1 1 * ?":
-                return "每月1号凌晨1:00";
-            case "0 0 2 ? * SUN":
-                return "每周日凌晨2:00";
-            case "0 0 3 ? * MON":
-                return "每周一凌晨3:00";
-            case "0 0 4 L * ?":
-                return "每月最后一天凌晨4:00";
-            case "0 0 5 1 * ?":
-                return "每月1号凌晨5:00";
-            case "0 */5 * * * ?":
-                return "每5分钟执行一次";
-            default:
-                return cronExpression;
         }
     }
 }

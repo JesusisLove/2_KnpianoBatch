@@ -13,6 +13,8 @@ public class BatchJobInfo {
     private String beanName;        // Spring Bean名称，如 kndb1010Job
     private String description;     // 作业描述
     private String cronExpression;  // 定时表达式（可选）
+    private String cronDescription; // 定时表达式描述（可选）
+    private String targetDescription; // 处理目标描述（可选）
     private boolean enabled;        // 是否启用
     
     public BatchJobInfo() {}
@@ -65,6 +67,22 @@ public class BatchJobInfo {
         this.cronExpression = cronExpression;
     }
     
+    public String getCronDescription() {
+        return cronDescription;
+    }
+    
+    public void setCronDescription(String cronDescription) {
+        this.cronDescription = cronDescription;
+    }
+    
+    public String getTargetDescription() {
+        return targetDescription;
+    }
+    
+    public void setTargetDescription(String targetDescription) {
+        this.targetDescription = targetDescription;
+    }
+    
     public boolean isEnabled() {
         return enabled;
     }
@@ -80,6 +98,8 @@ public class BatchJobInfo {
                 ", beanName='" + beanName + '\'' +
                 ", description='" + description + '\'' +
                 ", cronExpression='" + cronExpression + '\'' +
+                ", cronDescription='" + cronDescription + '\'' +
+                ", targetDescription='" + targetDescription + '\'' +
                 ", enabled=" + enabled +
                 '}';
     }

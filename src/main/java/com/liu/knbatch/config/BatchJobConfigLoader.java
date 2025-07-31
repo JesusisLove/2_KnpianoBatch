@@ -87,6 +87,8 @@ public class BatchJobConfigLoader {
             
             // 可选属性
             jobInfo.setCronExpression(getOptionalAttribute(jobElement, "cron-expression"));
+            jobInfo.setCronDescription(getOptionalAttribute(jobElement, "cron-description"));
+            jobInfo.setTargetDescription(getOptionalAttribute(jobElement, "target-description"));
             
             // 启用状态（默认为true）
             String enabledStr = getOptionalAttribute(jobElement, "enabled");

@@ -11,43 +11,39 @@
     - bean-name: Spring容器中的Bean名称 (如: kndb1010Job)
     - description: 作业描述，便于理解和运维
     - cron-expression: 定时表达式（可选），用于自动执行模式
+    - cron-description: 定时表达式的可读描述（可选）
+    - target-description: 处理目标描述（可选）
     - enabled: 是否开启batch处理，默认为true：开启， false：关闭
     -->
 
     <!-- 现有的批处理作业 -->
 
     <!-- KNDB1010: 钢琴课程级别矫正 -->
-    <!-- <batch-job id="KNDB1010" bean-name="kndb1010Job" description="钢琴课程级别矫正" cron-expression="0 0 1 1 * ?"
-        enabled="false" /> -->
-
-    <batch-job id="KNDB1010" bean-name="kndb1010Job" description="钢琴课程级别矫正" cron-expression="0 */5 * * * ?"
-        enabled="true" />
+    <batch-job id="KNDB1010" bean-name="kndb1010Job" description="钢琴课程级别矫正" cron-expression="0 0 1 1 * ?"
+        cron-description="每月1号凌晨1:00" target-description="钢琴课程级别矫正处理" enabled="true" />
 
     <!-- KNDB4010: 每周自动排课 -->
-    <!-- <batch-job id="KNDB4010" bean-name="kndb4010Job" description="次周自动排课" cron-expression="0 0 2 ? * SUN"
-        enabled="true" /> -->
-
-    <batch-job id="KNDB4010" bean-name="kndb4010Job" description="次周自动排课" cron-expression="0 */6 * * * ?"
-        enabled="true" />
+    <batch-job id="KNDB4010" bean-name="kndb4010Job" description="次周自动排课" cron-expression="0 0 20 ? * SUN"
+        cron-description="每周日20:00" target-description="次周自动排课处理" enabled="true" />
 
     <!-- KNDB1020: 学生信息同步 -->
     <batch-job id="KNDB1020" bean-name="kndb1020Job" description="学生信息同步" cron-expression="0 0 2 ? * SUN"
-        enabled="false" />
+        cron-description="每周日凌晨2:00" target-description="学生信息同步处理" enabled="false" />
 
     <!-- 未来新增的批处理作业 -->
     <!-- 只需要添加配置，代码零修改！ -->
 
     <!-- KNDB1030: 教师排课管理 -->
     <batch-job id="KNDB1030" bean-name="kndb1030Job" description="教师排课管理" cron-expression="0 0 3 ? * MON"
-        enabled="false" />
+        cron-description="每周一凌晨3:00" target-description="教师排课管理处理" enabled="false" />
 
     <!-- KNDB1040: 学费结算处理 -->
     <batch-job id="KNDB1040" bean-name="kndb1040Job" description="学费结算处理" cron-expression="0 0 4 L * ?"
-        enabled="false" />
+        cron-description="每月最后一天凌晨4:00" target-description="学费结算处理" enabled="false" />
 
     <!-- KNDB1050: 月度报表生成 -->
     <batch-job id="KNDB1050" bean-name="kndb1050Job" description="月度报表生成" cron-expression="0 0 5 1 * ?"
-        enabled="false" />
+        cron-description="每月1号凌晨5:00" target-description="月度报表生成处理" enabled="false" />
 
     <!--
     添加新作业的步骤:
@@ -63,13 +59,15 @@
            bean-name="kndb1060Job" 
            description="您的业务描述"
            cron-expression="0 0 6 ? * TUE"
+           cron-description="每周二凌晨6:00"
+           target-description="您的处理目标描述"
            enabled="true" />
     
     3. 完成！无需修改 KnpianoBatchApplication.java 或任何其他Java代码
     
     4. 可以立即执行：
-       手动执行: java -jar knpiano-batch.jar KNDB1060_MANUAL base.date=20250130
-       自动执行: java -jar knpiano-batch.jar KNDB1060_AUTO
+       手动执行: java -jar knpiano-batch.jar (使用参数) job.name=KNDB1060_MANUAL (使用参数) base.date=20250130
+       自动执行: java -jar knpiano-batch.jar
     
     Cron表达式参考:
     

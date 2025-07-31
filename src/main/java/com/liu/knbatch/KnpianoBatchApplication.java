@@ -16,8 +16,6 @@ import com.liu.knbatch.config.BatchJobInfo;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 @SpringBootApplication
 @EnableBatchProcessing
@@ -26,19 +24,6 @@ import java.util.HashMap;
 public class KnpianoBatchApplication {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
-    
-    // 动态Cron表达式描述映射
-    private static final Map<String, String> CRON_DESCRIPTIONS = new HashMap<>();
-    static {
-        CRON_DESCRIPTIONS.put("0 0 1 1 * ?", "每月1号凌晨1:00");
-        CRON_DESCRIPTIONS.put("0 0 2 ? * SUN", "每周日凌晨2:00");
-        CRON_DESCRIPTIONS.put("0 0 3 ? * MON", "每周一凌晨3:00");
-        CRON_DESCRIPTIONS.put("0 0 4 L * ?", "每月最后一天凌晨4:00");
-        CRON_DESCRIPTIONS.put("0 0 5 1 * ?", "每月1号凌晨5:00");
-        CRON_DESCRIPTIONS.put("0 */5 * * * ?", "每5分钟执行一次");
-        CRON_DESCRIPTIONS.put("0 0 0 ? * MON-FRI", "工作日午夜执行");
-        CRON_DESCRIPTIONS.put("0 30 9 * * ?", "每天上午9:30执行");
-    }
 
     public static void main(String[] args) {
         // 检查是否为手动执行模式
@@ -130,23 +115,13 @@ public class KnpianoBatchApplication {
     private static void displayRegisteredJobs(List<BatchJobInfo> jobs) {
         System.out.println("已注册的定时任务:");
         for (BatchJobInfo jobInfo : jobs) {
-            String cronDesc = parseCronDescription(jobInfo.getCronExpression());
+            // 使用XML配置中的描述，消除硬编码
+            String cronDesc = jobInfo.getCronDescription() != null ? 
+                              jobInfo.getCronDescription() : 
+                             (jobInfo.getCronExpression() != null ? jobInfo.getCronExpression() : "未设置定时");
             System.out.println("  - " + jobInfo.getJobId() + ": " + cronDesc + " 执行" + jobInfo.getDescription());
         }
         System.out.println("");
-    }
-    
-    /**
-     * 解析Cron表达式为人类可读的描述
-     * 完全动态化，不再硬编码
-     */
-    private static String parseCronDescription(String cronExpression) {
-        if (cronExpression == null || cronExpression.trim().isEmpty()) {
-            return "未设置定时";
-        }
-        
-        // 使用动态映射表，而不是硬编码的if-else
-        return CRON_DESCRIPTIONS.getOrDefault(cronExpression.trim(), cronExpression);
     }
 
     /**
