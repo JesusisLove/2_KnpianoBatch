@@ -1,6 +1,6 @@
 package com.liu.knbatch.dao;
 
-import com.liu.knbatch.entity.Lesson;
+import com.liu.knbatch.entity.KNDB1010Entity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -21,7 +21,7 @@ public interface KNDB1010Dao {
      * @param targetMonth 目标月份 (格式: yyyy-MM)
      * @return 错误级别的课程记录列表
      */
-    List<Lesson> selectIncorrectPianoLevelLessons(@Param("targetMonth") String targetMonth);
+    List<KNDB1010Entity> selectIncorrectPianoLevelLessons(@Param("targetMonth") String targetMonth);
     
     /**
      * 给错误的钢琴级别课程进行数据矫正（更新操作）

@@ -30,7 +30,7 @@ src/
 │   │       ├── dao/
 │   │       │   └── KNDB1010Dao.java              # 数据访问接口
 │   │       ├── entity/
-│   │       │   └── Lesson.java                   # 课程实体类
+│   │       │   └── KNDB1010Entity.java                   # 课程实体类
 │   │       └── tasklet/
 │   │           └── KNDB1010Tasklet.java          # 业务处理任务
 │   └── resources/
