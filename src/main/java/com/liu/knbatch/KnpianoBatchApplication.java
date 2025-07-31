@@ -16,6 +16,8 @@ import com.liu.knbatch.config.BatchJobInfo;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @SpringBootApplication
 @EnableBatchProcessing
@@ -24,6 +26,19 @@ import java.util.List;
 public class KnpianoBatchApplication {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
+    
+    // 动态Cron表达式描述映射
+    private static final Map<String, String> CRON_DESCRIPTIONS = new HashMap<>();
+    static {
+        CRON_DESCRIPTIONS.put("0 0 1 1 * ?", "每月1号凌晨1:00");
+        CRON_DESCRIPTIONS.put("0 0 2 ? * SUN", "每周日凌晨2:00");
+        CRON_DESCRIPTIONS.put("0 0 3 ? * MON", "每周一凌晨3:00");
+        CRON_DESCRIPTIONS.put("0 0 4 L * ?", "每月最后一天凌晨4:00");
+        CRON_DESCRIPTIONS.put("0 0 5 1 * ?", "每月1号凌晨5:00");
+        CRON_DESCRIPTIONS.put("0 */5 * * * ?", "每5分钟执行一次");
+        CRON_DESCRIPTIONS.put("0 0 0 ? * MON-FRI", "工作日午夜执行");
+        CRON_DESCRIPTIONS.put("0 30 9 * * ?", "每天上午9:30执行");
+    }
 
     public static void main(String[] args) {
         // 检查是否为手动执行模式
@@ -63,7 +78,7 @@ public class KnpianoBatchApplication {
         ConfigurableApplicationContext context = SpringApplication.run(KnpianoBatchApplication.class, args);
         
         try {
-            String jobName = getJobName(args);
+            String jobName = getJobName(args, context);
             String baseDate = getBaseDate(args, jobName);
             executeJob(context, jobName, baseDate);
         } catch (Exception e) {
@@ -95,8 +110,8 @@ public class KnpianoBatchApplication {
             displayRegisteredJobs(registry.getAllJobs());
             
             System.out.println("日志查看:");
-            System.out.println("  - 主日志: tail -f /var/log/knpiano-batch/knpiano-batch.log");
-            System.out.println("  - 错误日志: tail -f /var/log/knpiano-batch/knpiano-batch-error.log");
+            System.out.println("  - 主日志: tail -f logs/knpiano-batch.log");
+            System.out.println("  - 错误日志: tail -f logs/knpiano-batch-error.log");
             System.out.println("=====================================");
             
         } catch (Exception e) {
@@ -123,34 +138,50 @@ public class KnpianoBatchApplication {
     
     /**
      * 解析Cron表达式为人类可读的描述
+     * 完全动态化，不再硬编码
      */
     private static String parseCronDescription(String cronExpression) {
         if (cronExpression == null || cronExpression.trim().isEmpty()) {
             return "未设置定时";
         }
         
-        if ("0 0 1 1 * ?".equals(cronExpression)) {
-            return "每月1号凌晨1:00";
-        } else if ("0 0 2 ? * SUN".equals(cronExpression)) {
-            return "每周日凌晨2:00";
-        } else if ("0 0 3 ? * MON".equals(cronExpression)) {
-            return "每周一凌晨3:00";
-        } else if ("0 0 4 L * ?".equals(cronExpression)) {
-            return "每月最后一天凌晨4:00";
-        } else if ("0 0 5 1 * ?".equals(cronExpression)) {
-            return "每月1号凌晨5:00";
-        } else {
-            return cronExpression;
-        }
+        // 使用动态映射表，而不是硬编码的if-else
+        return CRON_DESCRIPTIONS.getOrDefault(cronExpression.trim(), cronExpression);
     }
 
-    private static String getJobName(String[] args) {
+    /**
+     * 动态获取作业名称，并提供动态的错误提示
+     */
+    private static String getJobName(String[] args, ConfigurableApplicationContext context) {
         for (String arg : args) {
             if (arg.startsWith("--job.name=")) {
                 return arg.substring("--job.name=".length());
             }
         }
-        throw new IllegalArgumentException("缺少必要参数 --job.name，请使用格式: --job.name=KNDB1010_MANUAL 或 --job.name=KNDB1010_AUTO");
+        
+        // 动态生成错误提示信息
+        StringBuilder errorMessage = new StringBuilder("缺少必要参数 --job.name，支持的作业格式: ");
+        
+        try {
+            BatchJobRegistry registry = context.getBean(BatchJobRegistry.class);
+            List<BatchJobInfo> jobs = registry.getAllJobs();
+            
+            if (!jobs.isEmpty()) {
+                errorMessage.append("\n可用的作业:");
+                for (BatchJobInfo job : jobs) {
+                    errorMessage.append("\n  - ").append(job.getJobId())
+                              .append("_MANUAL --base.date=yyyyMMdd (手动执行)")
+                              .append("\n  - ").append(job.getJobId())
+                              .append("_AUTO (自动使用当前日期)");
+                }
+            } else {
+                errorMessage.append("未找到任何已配置的作业，请检查 batch-jobs.xml 配置文件");
+            }
+        } catch (Exception e) {
+            errorMessage.append("请使用格式: --job.name=作业ID_MANUAL 或 --job.name=作业ID_AUTO");
+        }
+        
+        throw new IllegalArgumentException(errorMessage.toString());
     }
 
     private static String getBaseDate(String[] args, String jobName) {

@@ -4,16 +4,12 @@
 <mapper namespace="com.liu.knbatch.dao.KNDB1010Dao">
 
     <!-- 结果映射 -->
-    <resultMap id="LessonResultMap" type="com.liu.knbatch.entity.Lesson">
-        <result property="stuId" column="stu_id"/>
-        <result property="subjectId" column="subject_id"/>
-        <result property="subjectSubId" column="subject_sub_id"/>
-        <result property="schedualDate" column="schedual_date"/>
-        <result property="lessonId" column="lesson_id"/>
-        <result property="teacherId" column="teacher_id"/>
-        <result property="status" column="status"/>
-        <result property="createTime" column="create_time"/>
-        <result property="updateTime" column="update_time"/>
+    <resultMap id="KNDB1010EntityMap" type="com.liu.knbatch.entity.KNDB1010Entity">
+        <result property="stuId" column="stu_id" />
+        <result property="subjectId" column="subject_id" />
+        <result property="subjectSubId" column="subject_sub_id" />
+        <result property="schedualDate" column="schedual_date" />
+        <result property="lessonId" column="lesson_id" />
     </resultMap>
 
     <!-- 获取排课钢琴错误级别的课程记录用的SQL 
@@ -21,16 +17,16 @@
         但是，老师在当前月的最后一周排课的学生排到了次月的某个星期几（仍然是5级，实际上下月学生要学6级），导致下月的课程出现了两个级别的课（第一周5级，第二周以后6级）
         排在下月的5级的课程是错误级别的课程，执行该batch，就是将第一周的错误的5级课程改成正确的6级课程
     -->
-    <select id="selectIncorrectPianoLevelLessons" parameterType="string" resultMap="LessonResultMap">
-        SELECT lsn.* 
+    <select id="selectIncorrectPianoLevelLessons" parameterType="string" resultMap="KNDB1010EntityMap">
+        SELECT lsn.*
         FROM v_info_lesson lsn
         WHERE 1 = 1
         AND NOT EXISTS (
-            SELECT 1 
-            FROM v_latest_subject_info_from_doc_tmp doc
-            WHERE doc.stu_id = lsn.stu_id
-            AND doc.subject_id = lsn.subject_id
-            AND doc.subject_sub_id = lsn.subject_sub_id
+        SELECT 1
+        FROM v_latest_subject_info_from_doc_tmp doc
+        WHERE doc.stu_id = lsn.stu_id
+        AND doc.subject_id = lsn.subject_id
+        AND doc.subject_sub_id = lsn.subject_sub_id
         )
         AND LEFT(lsn.schedual_date, 7) = #{targetMonth}
         ORDER BY lsn.stu_id, lsn.subject_id, lsn.schedual_date
@@ -42,48 +38,47 @@
         FROM v_info_lesson lsn
         WHERE 1 = 1
         AND NOT EXISTS (
-            SELECT 1 
-            FROM v_latest_subject_info_from_doc_tmp doc
-            WHERE doc.stu_id = lsn.stu_id
-            AND doc.subject_id = lsn.subject_id
-            AND doc.subject_sub_id = lsn.subject_sub_id
+        SELECT 1
+        FROM v_latest_subject_info_from_doc_tmp doc
+        WHERE doc.stu_id = lsn.stu_id
+        AND doc.subject_id = lsn.subject_id
+        AND doc.subject_sub_id = lsn.subject_sub_id
         )
         AND LEFT(lsn.schedual_date, 7) = #{targetMonth}
     </select>
 
-    <!-- 给错误的钢琴级别课程进行数据矫正（更新操作） -->
+    <!-- 给错误的钢琴级别课程进行数据矫正（更新操作） 用CDATA可以保留代码的缩进格式-->
     <update id="updateIncorrectPianoLevelLessons" parameterType="string">
+        <![CDATA[
         UPDATE t_info_lesson lsn
-        INNER JOIN (
-            SELECT doc1.* 
-            FROM v_latest_subject_info_from_doc_tmp doc1
-            INNER JOIN (
-                SELECT lsn.stu_id, lsn.subject_id
-                FROM v_info_lesson lsn
-                WHERE 1 = 1 
-                AND NOT EXISTS (
-                    SELECT 1 
-                    FROM v_latest_subject_info_from_doc_tmp doc 
-                    WHERE doc.stu_id = lsn.stu_id
-                    AND doc.subject_id = lsn.subject_id 
-                    AND doc.subject_sub_id = lsn.subject_sub_id 
-                )
-                AND LEFT(lsn.schedual_date, 7) = #{targetMonth}
-                GROUP BY lsn.stu_id, lsn.subject_id
-            ) lsn1 ON doc1.stu_id = lsn1.stu_id 
-                   AND doc1.subject_id = lsn1.subject_id
-        ) doc ON lsn.stu_id = doc.stu_id 
-             AND lsn.subject_id = doc.subject_id
+        inner join
+        -- 抽取要纠正级别课程的正确数据
+        (select doc1.* from v_latest_subject_info_from_doc_tmp doc1
+            inner join (
+                SELECT lsn.* FROM v_info_lesson lsn
+                WHERE 1 = 1
+                    AND NOT EXISTS (SELECT 1 FROM v_latest_subject_info_from_doc_tmp doc
+                                    WHERE doc.stu_id = lsn.stu_id
+                                        AND doc.subject_id = lsn.subject_id
+                                        AND doc.subject_sub_id = lsn.subject_sub_id
+                                   )
+                    AND LEFT(lsn.schedual_date,7) = #{targetMonth}
+            ) lsn1
+            on doc1.stu_id = lsn1.stu_id
+            and doc1.subject_id = lsn1.subject_id)doc
+        on lsn.stu_id = doc.stu_id
+        and lsn.subject_id = doc.subject_id
+        -- 纠正更新
         SET lsn.subject_sub_id = doc.subject_sub_id
-        WHERE 1 = 1 
-        AND NOT EXISTS (
-            SELECT 1 
-            FROM v_latest_subject_info_from_doc_tmp doc 
-            WHERE doc.stu_id = lsn.stu_id
-            AND doc.subject_id = lsn.subject_id 
-            AND doc.subject_sub_id = lsn.subject_sub_id 
-        )
-        AND LEFT(lsn.schedual_date, 7) = #{targetMonth}
+        -- 对v_info_lesson里有错课的钢琴级别课程
+        WHERE 1 = 1
+            AND NOT EXISTS (SELECT 1 FROM v_latest_subject_info_from_doc_tmp doc
+                            WHERE doc.stu_id = lsn.stu_id
+                                AND doc.subject_id = lsn.subject_id
+                                AND doc.subject_sub_id = lsn.subject_sub_id
+                           )
+            AND LEFT(lsn.schedual_date,7) = #{targetMonth}
+        ]]>
     </update>
 
 </mapper>

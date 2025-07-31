@@ -1,29 +1,27 @@
 package com.liu.knbatch.entity;
 
-import java.util.Date;
-
 /**
  * 课程信息实体类
  * 
  * @author Liu
  * @version 1.0.0
  */
-public class Lesson {
+public class KNDB1010Entity {
     
     private String stuId;           // 学生ID
     private String subjectId;       // 科目ID
     private String subjectSubId;    // 科目子ID（级别）
     private String schedualDate;    // 排课日期
     private String lessonId;        // 课程ID
-    private String teacherId;       // 教师ID
-    private String status;          // 状态
-    private Date createTime;        // 创建时间
-    private Date updateTime;        // 更新时间
+    // private String teacherId;       // 教师ID
+    // private String status;          // 状态
+    // private Date createTime;        // 创建时间
+    // private Date updateTime;        // 更新时间
     
     // 构造函数
-    public Lesson() {}
+    public KNDB1010Entity() {}
     
-    public Lesson(String stuId, String subjectId, String subjectSubId) {
+    public KNDB1010Entity(String stuId, String subjectId, String subjectSubId) {
         this.stuId = stuId;
         this.subjectId = subjectId;
         this.subjectSubId = subjectSubId;
@@ -70,50 +68,50 @@ public class Lesson {
         this.lessonId = lessonId;
     }
     
-    public String getTeacherId() {
-        return teacherId;
-    }
+    // public String getTeacherId() {
+    //     return teacherId;
+    // }
     
-    public void setTeacherId(String teacherId) {
-        this.teacherId = teacherId;
-    }
+    // public void setTeacherId(String teacherId) {
+    //     this.teacherId = teacherId;
+    // }
     
-    public String getStatus() {
-        return status;
-    }
+    // public String getStatus() {
+    //     return status;
+    // }
     
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    // public void setStatus(String status) {
+    //     this.status = status;
+    // }
     
-    public Date getCreateTime() {
-        return createTime;
-    }
+    // public Date getCreateTime() {
+    //     return createTime;
+    // }
     
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
+    // public void setCreateTime(Date createTime) {
+    //     this.createTime = createTime;
+    // }
     
-    public Date getUpdateTime() {
-        return updateTime;
-    }
+    // public Date getUpdateTime() {
+    //     return updateTime;
+    // }
     
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
+    // public void setUpdateTime(Date updateTime) {
+    //     this.updateTime = updateTime;
+    // }
     
     @Override
     public String toString() {
-        return "Lesson{" +
+        return "KNDB1010Entity{" +
                 "stuId='" + stuId + '\'' +
                 ", subjectId='" + subjectId + '\'' +
                 ", subjectSubId='" + subjectSubId + '\'' +
                 ", schedualDate='" + schedualDate + '\'' +
                 ", lessonId='" + lessonId + '\'' +
-                ", teacherId='" + teacherId + '\'' +
-                ", status='" + status + '\'' +
-                ", createTime=" + createTime +
-                ", updateTime=" + updateTime +
+                // ", teacherId='" + teacherId + '\'' +
+                // ", status='" + status + '\'' +
+                // ", createTime=" + createTime +
+                // ", updateTime=" + updateTime +
                 '}';
     }
 }

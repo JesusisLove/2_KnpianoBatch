@@ -19,7 +19,7 @@ KnpianoBatch/                                   # 项目根目录
         │   │   ├── KNDB1010Dao.java          # KNDB1010数据访问接口
         │   │   └── KNDB1020Dao.java          # KNDB1020数据访问接口
         │   ├── entity/                        # 实体类包
-        │   │   └── Lesson.java               # 课程实体类
+        │   │   └── KNDB1010Entity.java               # 课程实体类
         │   ├── config/                        # 🔥 动态配置核心包
         │   │   ├── BatchConfiguration.java   # 🔄 更新后的主配置（导入动态配置）
         │   │   ├── KNDB1010Config.java       # KNDB1010专用批处理配置

@@ -1,7 +1,7 @@
 package com.liu.knbatch.tasklet;
 
 import com.liu.knbatch.dao.KNDB1010Dao;
-import com.liu.knbatch.entity.Lesson;
+import com.liu.knbatch.entity.KNDB1010Entity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -61,7 +61,7 @@ public class KNDB1010Tasklet implements Tasklet {
             
             // 步骤1: 获取排课钢琴错误级别的课程记录
             logger.info("步骤1: 开始获取排课钢琴错误级别的课程记录...");
-            List<Lesson> incorrectLessons = kndb1010Dao.selectIncorrectPianoLevelLessons(targetMonth);
+            List<KNDB1010Entity> incorrectLessons = kndb1010Dao.selectIncorrectPianoLevelLessons(targetMonth);
             int incorrectCount = incorrectLessons.size();
             
             logger.info("步骤1: 完成 - 发现错误级别课程记录数: {}", incorrectCount);
@@ -76,7 +76,7 @@ public class KNDB1010Tasklet implements Tasklet {
             if (logger.isDebugEnabled()) {
                 logger.debug("错误课程记录详情:");
                 for (int i = 0; i < Math.min(incorrectLessons.size(), 10); i++) { // 最多显示10条
-                    Lesson lesson = incorrectLessons.get(i);
+                    KNDB1010Entity lesson = incorrectLessons.get(i);
                     logger.debug("  - 学生ID: {}, 科目ID: {}, 当前级别: {}, 排课日期: {}", 
                             lesson.getStuId(), lesson.getSubjectId(), 
                             lesson.getSubjectSubId(), lesson.getSchedualDate());
