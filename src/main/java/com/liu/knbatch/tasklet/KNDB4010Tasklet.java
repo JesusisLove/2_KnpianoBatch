@@ -11,9 +11,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 /**
  * KNDB4010 次周自动排课正 业务处理任务
@@ -30,7 +27,6 @@ import java.util.List;
 public class KNDB4010Tasklet implements Tasklet {
     
     private static final Logger logger = LoggerFactory.getLogger(KNDB4010Tasklet.class);
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     
     @Autowired
     private KNDB4010Dao kndb4010Dao;

@@ -1,12 +1,9 @@
 package com.liu.knbatch.dao;
 
-import com.liu.knbatch.entity.KNDB1010Entity;
 import com.liu.knbatch.entity.KNDB4010Entity;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
 
 /**
  * KNDB4010 钢琴课程级别矫正 数据访问接口

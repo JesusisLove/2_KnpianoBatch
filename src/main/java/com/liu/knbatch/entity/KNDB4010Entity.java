@@ -1,7 +1,5 @@
 package com.liu.knbatch.entity;
 
-import java.util.Date;
-
 /**
  * 课程信息实体类
  * 

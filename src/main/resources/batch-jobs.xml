@@ -22,6 +22,9 @@
     <batch-job id="KNDB1010" bean-name="kndb1010Job" description="钢琴课程级别矫正" cron-expression="0 0 1 1 * ?"
         cron-description="每月1号凌晨1:00" target-description="钢琴课程级别矫正处理" enabled="true" />
 
+    <!-- <batch-job id="KNDB1010" bean-name="kndb1010Job" description="钢琴课程级别矫正" cron-expression="0 */5 * * * ?"
+        cron-description="每月1号凌晨1:00" target-description="钢琴课程级别矫正处理" enabled="true" /> -->
+
     <!-- KNDB4010: 每周自动排课 -->
     <batch-job id="KNDB4010" bean-name="kndb4010Job" description="次周自动排课" cron-expression="0 0 20 ? * SUN"
         cron-description="每周日20:00" target-description="次周自动排课处理" enabled="true" />
@@ -33,24 +36,12 @@
     <!-- 未来新增的批处理作业 -->
     <!-- 只需要添加配置，代码零修改！ -->
 
-    <!-- KNDB1030: 教师排课管理 -->
-    <batch-job id="KNDB1030" bean-name="kndb1030Job" description="教师排课管理" cron-expression="0 0 3 ? * MON"
-        cron-description="每周一凌晨3:00" target-description="教师排课管理处理" enabled="false" />
-
-    <!-- KNDB1040: 学费结算处理 -->
-    <batch-job id="KNDB1040" bean-name="kndb1040Job" description="学费结算处理" cron-expression="0 0 4 L * ?"
-        cron-description="每月最后一天凌晨4:00" target-description="学费结算处理" enabled="false" />
-
-    <!-- KNDB1050: 月度报表生成 -->
-    <batch-job id="KNDB1050" bean-name="kndb1050Job" description="月度报表生成" cron-expression="0 0 5 1 * ?"
-        cron-description="每月1号凌晨5:00" target-description="月度报表生成处理" enabled="false" />
-
     <!--
     添加新作业的步骤:
     
     1. 编写具体的Job实现类
-       例如：com.liu.knbatch.tasklet.KNDB1060Tasklet.java
-       和：com.liu.knbatch.config.KNDB1060Config.java
+        例如：com.liu.knbatch.tasklet.KNDB1060Tasklet.java
+        　和：com.liu.knbatch.config.KNDB1060Config.java
     
     2. 在这里添加一个 batch-job 节点配置
        例如:
