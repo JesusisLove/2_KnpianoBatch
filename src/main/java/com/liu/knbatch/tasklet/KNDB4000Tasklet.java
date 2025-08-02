@@ -2,9 +2,11 @@ package com.liu.knbatch.tasklet;
 
 import com.liu.knbatch.dao.KNDB4000Dao;
 import com.liu.knbatch.entity.KNDB4000Entity;
+import com.liu.knbatch.service.SimpleEmailService;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
@@ -37,12 +39,20 @@ public class KNDB4000Tasklet implements Tasklet {
     
     @Autowired
     private KNDB4000Dao kndb4000Dao;
+
+    @Autowired(required = false)
+    private SimpleEmailService emailService;
     
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         long startTime = System.currentTimeMillis();
         String batchName = "KNDB4000";
+        boolean success = false;
+        int deletedCount = 0;
+        int insertedCount = 0;
+        StringBuilder logContent = new StringBuilder();
         
+        addLog(logContent, "========== " + batchName + " 批处理开始执行 ==========");
         logger.info("========== {} 批处理开始执行 ==========", batchName);
         
         try {
@@ -52,29 +62,53 @@ public class KNDB4000Tasklet implements Tasklet {
             String jobMode = (String) chunkContext.getStepContext()
                     .getJobParameters().get("jobMode");
             
+            addLog(logContent, "批处理参数 - 基准日期: " + baseDate + ", 执行模式: " + jobMode);
             logger.info("批处理参数 - 基准日期: {}, 执行模式: {}", baseDate, jobMode);
             
             // 步骤1: 删除去年的年度周次表生成记录
+            addLog(logContent, "步骤1: 查看该日期所在的星期的排课状态信息...");
             logger.info("步骤1: 查看该日期所在的星期的排课状态信息...");
-            int delCnt = kndb4000Dao.deleteAll();;
+            
+            deletedCount = kndb4000Dao.deleteAll();
         
-            logger.info("步骤1: 删除年度周次表记录 - : {} 条", delCnt);
+            addLog(logContent, "步骤1: 删除年度周次表记录 - : " + deletedCount + " 条");
+            logger.info("步骤1: 删除年度周次表记录 - : {} 条", deletedCount);
             
             // 步骤2: 执行新年度的年度周次表生成
             int year = LocalDate.now().getYear(); // 获取年份部分
+            addLog(logContent, "步骤2: 新年度周次表生成开始 - 当前年度 : " + year + " 年");
             logger.info("步骤2: 新年度周次表生成开始 - 当前年度 : {} 年", year);
             
-            int insCnt = insertWeeksForYear(year);
+            insertedCount = insertWeeksForYear(year, logContent);
 
-            logger.info("步骤2: 新年度周次表生成结束  - 生成记录 : {} 条", insCnt);
+            addLog(logContent, "步骤2: 新年度周次表生成结束  - 生成记录 : " + insertedCount + " 条");
+            logger.info("步骤2: 新年度周次表生成结束  - 生成记录 : {} 条", insertedCount);
+            
+            success = true;
+            logExecutionResult(batchName, "SUCCESS", deletedCount, insertedCount, startTime, logContent);
             
             return RepeatStatus.FINISHED;
             
         } catch (Exception e) {
+            addLog(logContent, "========== " + batchName + " 批处理执行异常 ==========");
+            addLog(logContent, "错误信息: " + e.getMessage());
             logger.error("========== {} 批处理执行异常 ==========", batchName, e);
-            logExecutionResult(batchName, "ERROR", 0, 0, startTime);
+            
+            success = false;
+            logExecutionResult(batchName, "ERROR", deletedCount, insertedCount, startTime, logContent);
             throw e;
+        } finally {
+            // 发送邮件通知
+            sendEmailNotification(batchName, success, logContent.toString());
         }
+    }
+    
+    /**
+     * 添加日志条目（带时间戳）
+     */
+    private void addLog(StringBuilder logContent, String message) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        logContent.append(String.format("[%s] %s\n", timestamp, message));
     }
     
     /**
@@ -85,26 +119,45 @@ public class KNDB4000Tasklet implements Tasklet {
      * @param readCount 读取记录数
      * @param writeCount 写入记录数
      * @param startTime 开始时间
+     * @param logContent 日志内容收集器
      */
-    private void logExecutionResult(String batchName, String status, int readCount, int writeCount, long startTime) {
+    private void logExecutionResult(String batchName, String status, int readCount, int writeCount, long startTime, StringBuilder logContent) {
         long endTime = System.currentTimeMillis();
         long executionTime = endTime - startTime;
+        
+        addLog(logContent, "========== " + batchName + " 批处理执行完成 ==========");
+        addLog(logContent, "批处理名称: " + batchName);
+        addLog(logContent, "执行状态: " + status);
+        addLog(logContent, "删除记录数: " + readCount);
+        addLog(logContent, "插入记录数: " + writeCount);
+        addLog(logContent, "执行时间: " + executionTime + " ms (" + (executionTime / 1000.0) + " 秒)");
+        addLog(logContent, "执行结束时间: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        addLog(logContent, "================================================");
         
         logger.info("========== {} 批处理执行完成 ==========", batchName);
         logger.info("批处理名称: {}", batchName);
         logger.info("执行状态: {}", status);
-        logger.info("处理数据条数: {}", readCount);
-        logger.info("更新数据条数: {}", writeCount);
+        logger.info("删除记录数: {}", readCount);
+        logger.info("插入记录数: {}", writeCount);
         logger.info("执行时间: {} ms ({} 秒)", executionTime, executionTime / 1000.0);
-        logger.info("执行结束时间: {}", java.time.LocalDateTime.now().format(
-                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        logger.info("执行结束时间: {}", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         logger.info("================================================");
     }
 
-    private int insertWeeksForYear(int year) {
+    /**
+     * 为指定年份插入周次记录
+     * 
+     * @param year 年份
+     * @param logContent 日志内容收集器
+     * @return 插入的记录数
+     */
+    private int insertWeeksForYear(int year, StringBuilder logContent) {
         LocalDate date = LocalDate.of(year, 1, 1);
         WeekFields weekFields = WeekFields.of(Locale.getDefault());
         int cnt = 0;
+        
+        addLog(logContent, "开始为 " + year + " 年生成周次表...");
+        
         while (date.getYear() == year) {
             int weekNumber = date.get(weekFields.weekOfWeekBasedYear());
             LocalDate weekStart = date.with(DayOfWeek.MONDAY);
@@ -126,10 +179,34 @@ public class KNDB4000Tasklet implements Tasklet {
             status.setEndWeekDate(weekEndStr);
 
             kndb4000Dao.insertFixedLessonStatus(status);
+            
+            // 每10条记录记录一次进度
+            if (cnt % 10 == 0) {
+                addLog(logContent, "已生成第 " + (cnt + 1) + " 周记录: 第" + weekNumber + "周 (" + weekStartStr + " 至 " + weekEndStr + ")");
+            }
 
             date = date.plusWeeks(1);
-            cnt ++;
+            cnt++;
         }
+        
+        addLog(logContent, "年度周次表生成完成，共生成 " + cnt + " 条记录");
         return cnt;
+    }
+    
+    /**
+     * 发送邮件通知
+     */
+    private void sendEmailNotification(String jobName, boolean success, String logContent) {
+        try {
+            if (emailService != null) {
+                emailService.sendBatchNotification(jobName, success, logContent);
+                logger.info("邮件通知发送完成 - jobName: {}, success: {}", jobName, success);
+            } else {
+                logger.info("邮件服务未启用，跳过邮件发送 - jobName: {}", jobName);
+            }
+        } catch (Exception e) {
+            logger.error("发送邮件通知时出错 - jobName: {}, error: {}", jobName, e.getMessage(), e);
+            // 不要因为邮件发送失败而影响批处理任务的状态
+        }
     }
 }
