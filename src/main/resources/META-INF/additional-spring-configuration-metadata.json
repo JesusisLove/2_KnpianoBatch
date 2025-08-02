@@ -1,0 +1,22 @@
+{"properties": [
+  {
+    "name": "app.environment",
+    "type": "java.lang.String",
+    "description": "A description for 'app.environment'"
+  },
+  {
+    "name": "app.batch.retry.max-attempts",
+    "type": "java.lang.String",
+    "description": "A description for 'app.batch.retry.max-attempts'"
+  },
+  {
+    "name": "app.debug.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'app.debug.enabled'"
+  },
+  {
+    "name": "app.batch.timeout.seconds",
+    "type": "java.lang.String",
+    "description": "A description for 'app.batch.timeout.seconds'"
+  }
+]}

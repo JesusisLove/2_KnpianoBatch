@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 @Configuration
 public class KNDB4010Config {
     
-    private static final Logger logger = LoggerFactory.getLogger(KNDB4010Config.class);
+    // private static final Logger logger = LoggerFactory.getLogger(KNDB4010Config.class);
     
     @Autowired
     private JobBuilderFactory jobBuilderFactory;
