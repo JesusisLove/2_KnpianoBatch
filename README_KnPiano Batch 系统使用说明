@@ -114,3 +114,21 @@ logging.level.org.springframework.scheduling=INFO
 3. 批处理执行成功率
 4. 数据库连接状态
 5. 日志文件大小和轮转状态
+
+# 补充 在开发阶段不打jar包的情况下，可以直接使用Maven命令来执行Spring Boot应用
+在开发阶段不打jar包的情况下，可以直接使用Maven命令来执行Spring Boot应用。基于你提供的jar包执行方式，对应的Maven命令应该是：
+1. 手动执行批处理任务
+bash# 对应 java -jar knpiano-batch.jar --job.name=KNDB1010_MANUAL --base.date=20250131
+mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1010_MANUAL --base.date=20250131"
+2. 自动执行批处理任务
+bash# 对应 java -jar knpiano-batch.jar --job.name=KNDB1020_AUTO
+mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1020_AUTO"
+3. 服务模式
+bash# 对应 java -jar knpiano-batch.jar (服务模式)
+mvn spring-boot:run
+
+注意事项
+
+工作目录：确保在项目根目录（包含pom.xml的目录）下执行命令
+Maven配置：确保pom.xml中有spring-boot-maven-plugin插件配置
+环境变量：如果有特定的环境变量需求，可能还需要额外配置

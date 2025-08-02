@@ -1,7 +1,14 @@
 package com.liu.knbatch.tasklet;
 
-import com.liu.knbatch.dao.KNDB4010Dao;
-import com.liu.knbatch.entity.KNDB4010Entity;
+import com.liu.knbatch.dao.KNDB4000Dao;
+import com.liu.knbatch.entity.KNDB4000Entity;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.WeekFields;
+import java.util.Locale;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -13,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 
 /**
- * KNDB4010 次周自动排课正 业务处理任务
+ * KNDB4000 次周自动排课正 业务处理任务
  * 概要：观妮通常在每周日的晚上对下一周的课程进行一周排课，此Batch处理就是替代她执行一周排课
  * 业务逻辑：
  * 1. 获取自动排课更新记录
@@ -24,17 +31,17 @@ import org.springframework.stereotype.Component;
  * @version 1.0.0
  */
 @Component
-public class KNDB4010Tasklet implements Tasklet {
+public class KNDB4000Tasklet implements Tasklet {
     
-    private static final Logger logger = LoggerFactory.getLogger(KNDB4010Tasklet.class);
+    private static final Logger logger = LoggerFactory.getLogger(KNDB4000Tasklet.class);
     
     @Autowired
-    private KNDB4010Dao kndb4010Dao;
+    private KNDB4000Dao kndb4000Dao;
     
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         long startTime = System.currentTimeMillis();
-        String batchName = "KNDB4010";
+        String batchName = "KNDB4000";
         
         logger.info("========== {} 批处理开始执行 ==========", batchName);
         
@@ -47,32 +54,19 @@ public class KNDB4010Tasklet implements Tasklet {
             
             logger.info("批处理参数 - 基准日期: {}, 执行模式: {}", baseDate, jobMode);
             
-            // 步骤1: 获取排课钢琴错误级别的课程记录
+            // 步骤1: 删除去年的年度周次表生成记录
             logger.info("步骤1: 查看该日期所在的星期的排课状态信息...");
-            KNDB4010Entity kndb4010Entity = kndb4010Dao.getFixedStatusInfo(baseDate.replaceAll("(\\d{4})(\\d{2})(\\d{2})", "$1-$2-$3"));
+            int delCnt = kndb4000Dao.deleteAll();;
         
-            int fixedStatus = kndb4010Entity.getFixedStatus();
+            logger.info("步骤1: 删除年度周次表记录 - : {} 条", delCnt);
             
-            logger.info("步骤1: 查实该星期的排课状态是 - : {}", fixedStatus);
+            // 步骤2: 执行新年度的年度周次表生成
+            int year = LocalDate.now().getYear(); // 获取年份部分
+            logger.info("步骤2: 新年度周次表生成开始 - 当前年度 : {} 年", year);
             
-            if (fixedStatus == 1) {
-                logger.info("该星期的课程，即{}至{}的课程已经排课完了.",kndb4010Entity.getStartWeekDate(), kndb4010Entity.getEndWeekDate());
-                logExecutionResult(batchName, "SUCCESS", 0, 0, startTime);
-                return RepeatStatus.FINISHED;
-            }
-            
-            // 步骤2: 执行下一周的一周排课作业
-            String startDate = kndb4010Entity.getStartWeekDate();
-            String endDate = kndb4010Entity.getEndWeekDate();
-            logger.info("步骤2: 开始执行下一周的一周排课作业...");
-            kndb4010Dao.doLsnWeeklySchedual(startDate, endDate,"kn-lsn-");
+            int insCnt = insertWeeksForYear(year);
 
-            logger.info("步骤2: 下一周的一周排课作业完成");
-            
-            // 更新对象排课周的排课状态
-            logger.info("更新: 排课状态表更新开始...");
-            int cnt = kndb4010Dao.updateWeeklyBatchStatus(startDate, endDate);
-            logger.info("更新: 完成，有{}条记录被更姓", cnt);
+            logger.info("步骤2: 新年度周次表生成结束  - 生成记录 : {} 条", insCnt);
             
             return RepeatStatus.FINISHED;
             
@@ -105,5 +99,37 @@ public class KNDB4010Tasklet implements Tasklet {
         logger.info("执行结束时间: {}", java.time.LocalDateTime.now().format(
                 java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         logger.info("================================================");
+    }
+
+    private int insertWeeksForYear(int year) {
+        LocalDate date = LocalDate.of(year, 1, 1);
+        WeekFields weekFields = WeekFields.of(Locale.getDefault());
+        int cnt = 0;
+        while (date.getYear() == year) {
+            int weekNumber = date.get(weekFields.weekOfWeekBasedYear());
+            LocalDate weekStart = date.with(DayOfWeek.MONDAY);
+            LocalDate weekEnd = date.with(DayOfWeek.SUNDAY);
+
+            // 将 LocalDate 转换成"yyyy-MM-dd"的字符串日期格式
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String weekStartStr = weekStart.format(formatter);
+            String weekEndStr = weekEnd.format(formatter);
+
+            if (weekStart.getYear() < year) {
+                date = date.plusWeeks(1);
+                continue;
+            }
+
+            KNDB4000Entity status = new KNDB4000Entity();
+            status.setWeekNumber(weekNumber);
+            status.setStartWeekDate(weekStartStr);
+            status.setEndWeekDate(weekEndStr);
+
+            kndb4000Dao.insertFixedLessonStatus(status);
+
+            date = date.plusWeeks(1);
+            cnt ++;
+        }
+        return cnt;
     }
 }
