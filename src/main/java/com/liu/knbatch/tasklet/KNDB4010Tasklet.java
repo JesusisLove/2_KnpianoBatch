@@ -13,6 +13,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -56,6 +57,18 @@ public class KNDB4010Tasklet implements Tasklet {
                     .getJobParameters().get("baseDate");
             String jobMode = (String) chunkContext.getStepContext()
                     .getJobParameters().get("jobMode");
+
+            // 日期格式化器（yyyyMMdd）
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+            // 将 baseDate 字符串转为 LocalDate
+            LocalDate baseLocalDate = LocalDate.parse(baseDate, formatter);
+
+            // 获取次日
+            LocalDate nextDate = baseLocalDate.plusDays(1);
+
+            // 转回字符串格式（yyyyMMdd）
+            baseDate = nextDate.format(formatter);
             
             addLog(logContent, "批处理参数 - 基准日期: " + baseDate + ", 执行模式: " + jobMode);
             logger.info("批处理参数 - 基准日期: {}, 执行模式: {}", baseDate, jobMode);
