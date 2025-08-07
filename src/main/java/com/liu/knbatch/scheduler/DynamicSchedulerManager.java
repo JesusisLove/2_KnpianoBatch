@@ -111,7 +111,7 @@ public class DynamicSchedulerManager implements SchedulingConfigurer {
             
             logger.info("=== {} 定时批处理开始执行 ===", jobId);
             logger.info("业务模块: {}", description);
-            logger.info("执行时间: {}", java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            logger.info("执行时间: {}", java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss EEEE")));
             
             // 使用XML配置中的目标描述，消除硬编码
             String targetDescription = jobInfo.getTargetDescription() != null ? 

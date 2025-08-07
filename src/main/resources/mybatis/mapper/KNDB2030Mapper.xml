@@ -18,7 +18,7 @@
         打个比方，就好像你预约的会议室，而且会都已经开完了（这月其他星期的课都上完了），其他人都开完会离开会议室了（其他课都签到了），因为你当天缺席不在，会议室还是处在预约的状态，这是不正常的状态。  -->
     <!-- advc.advc_flg = 0，再看该月份还有没有其他已经签到完了的排课，如果其他课也都是还没有签到，预支付状态还在，该记录的数据状态是正常数据。
         打个比方，你事先预约了个会议室，其他同事也进来了（这月其他星期的课也排了），会议还没有开始（签到还没有执行），大家都在会议室准备开会，而且你自己也在，这也是正常的状态。  -->
-    <select id="getAdvcLsnPayList" parameterType="string" resultType="KNDB2030EntityMap">
+    <select id="getAdvcLsnPayList" parameterType="string" resultMap="KNDB2030EntityMap">
         WITH advcAdjustedData AS
             (SELECT
                 advc.lesson_id,

@@ -95,7 +95,7 @@ public class KNDB2030Tasklet implements Tasklet {
             addLog(logContent, "预支付再调整课程记录详情:");
             for (int i = 0; i < Math.min(advcAdjustedList.size(), 5); i++) { // 邮件中最多显示5条
                 KNDB2030Entity lesson = advcAdjustedList.get(i);
-                String detailInfo = String.format("  - 学生ID: %s, 科目ID: %s, 当前级别: %s, 排课日期: %s", 
+                String detailInfo = String.format("  - 学生ID: %s, 科目ID: %s, 课程ID: %s", 
                         lesson.getStuId(), lesson.getSubjectId(), lesson.getLessonId());
                 addLog(logContent, detailInfo);
                 
@@ -131,7 +131,6 @@ public class KNDB2030Tasklet implements Tasklet {
                 kndb2030Dao.deleteInvalidAdvancePaymentLessonId(lessonId);
 
                 updatedCount += cnt;
-
             }
 
             
@@ -152,7 +151,9 @@ public class KNDB2030Tasklet implements Tasklet {
             success = false;
             logExecutionResult(batchName, "ERROR", incorrectCount, updatedCount, startTime, logContent);
             throw e;
+            
         } finally {
+            success = true;
             // 发送邮件通知
             sendEmailNotification(batchName, success, logContent.toString());
         }

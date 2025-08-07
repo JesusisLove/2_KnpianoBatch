@@ -94,7 +94,7 @@ public class SimpleEmailService {
         // 基本信息
         content.append("任务名称: ").append(jobName).append("\n");
         content.append("执行状态: ").append(success ? "成功" : "失败").append("\n");
-        content.append("执行时间: ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("\n");
+        content.append("执行时间: ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss EEEE"))).append("\n");
         content.append("系统环境: 生产环境\n\n");
         
         // 分隔线

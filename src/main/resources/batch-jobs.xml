@@ -24,8 +24,8 @@
     <batch-job id="KNDB1010" 
                bean-name="kndb1010Job" 
                description="钢琴课程级别矫正" 
-               cron-expression="0 0 1 1 * ?"
-               cron-description="每月1号 凌晨1:00" 
+               cron-expression="0 0 0 1 * ?"
+               cron-description="每月1号 凌晨0:00" 
                target-description="钢琴课程级别矫正处理"
                enabled="true" />
 
@@ -38,7 +38,7 @@
                target-description="预支付课费再调整处理"
                enabled="true" />
 
-    <!-- KNDB4010: 每周自动排课 -->
+    <!-- KNDB4010: 年度周次表生成 -->
     <batch-job id="KNDB4000" 
                bean-name="kndb4000Job" 
                description="年度周次表生成" 
@@ -57,13 +57,13 @@
                enabled="true" />
 
     <!-- KNDB1020: 学生信息同步 -->
-    <batch-job id="KNDB1020" 
+    <!-- <batch-job id="KNDB1020" 
                bean-name="kndb1020Job" 
                description="学生信息同步" 
                cron-expression="0 0 2 ? * SUN"
                cron-description="每周日 凌晨2:00" 
                target-description="学生信息同步处理" 
-               enabled="false" />
+               enabled="false" /> -->
 
     <!-- 未来新增的批处理作业 -->
     <!-- 只需要添加配置，代码零修改！ -->
