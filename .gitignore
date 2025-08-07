@@ -68,3 +68,6 @@ BOOT-INF/
 .project
 .classpath
 .factorypath
+
+# 忽略工具文件
+dev-env-setup.sh

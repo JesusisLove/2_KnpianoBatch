@@ -21,20 +21,49 @@
         cron-description="每月1号凌晨1:00" target-description="钢琴课程级别矫正处理" enabled="true" /> -->
 
     <!-- KNDB1010: 钢琴课程级别矫正 -->
-    <batch-job id="KNDB1010" bean-name="kndb1010Job" description="钢琴课程级别矫正" cron-expression="0 0 1 1 * ?"
-        cron-description="每月1号凌晨1:00" target-description="钢琴课程级别矫正处理" enabled="true" />
+    <batch-job id="KNDB1010" 
+               bean-name="kndb1010Job" 
+               description="钢琴课程级别矫正" 
+               cron-expression="0 0 1 1 * ?"
+               cron-description="每月1号 凌晨1:00" 
+               target-description="钢琴课程级别矫正处理"
+               enabled="true" />
+
+    <!-- KNDB2030: 课费预支付再调整 -->
+    <batch-job id="KNDB2030" 
+               bean-name="kndb2030Job" 
+               description="预支付课费再调整" 
+               cron-expression="0 0 23 ? * SUN"
+               cron-description="每周日 晚上11:00" 
+               target-description="预支付课费再调整处理"
+               enabled="true" />
 
     <!-- KNDB4010: 每周自动排课 -->
-    <batch-job id="KNDB4000" bean-name="kndb4000Job" description="次周自动排课" cron-expression="0 0 0 1 1 ?"
-        cron-description="每年1月1日00:00" target-description="次周自动排课处理" enabled="true" />
+    <batch-job id="KNDB4000" 
+               bean-name="kndb4000Job" 
+               description="年度周次表生成" 
+               cron-expression="0 0 0 1 1 ?"
+               cron-description="每年1月1日 00:00" 
+               target-description="年度周次表生成处理" 
+               enabled="true" />
 
     <!-- KNDB4010: 每周自动排课 -->
-    <batch-job id="KNDB4010" bean-name="kndb4010Job" description="次周自动排课" cron-expression="0 0 20 ? * SUN"
-        cron-description="每周日20:00" target-description="次周自动排课处理" enabled="true" />
+    <batch-job id="KNDB4010" 
+               bean-name="kndb4010Job"
+               description="次周自动排课"
+               cron-expression="0 0 20 ? * SUN"
+               cron-description="每周日 20:00"
+               target-description="次周自动排课处理"
+               enabled="true" />
 
     <!-- KNDB1020: 学生信息同步 -->
-    <batch-job id="KNDB1020" bean-name="kndb1020Job" description="学生信息同步" cron-expression="0 0 2 ? * SUN"
-        cron-description="每周日凌晨2:00" target-description="学生信息同步处理" enabled="false" />
+    <batch-job id="KNDB1020" 
+               bean-name="kndb1020Job" 
+               description="学生信息同步" 
+               cron-expression="0 0 2 ? * SUN"
+               cron-description="每周日 凌晨2:00" 
+               target-description="学生信息同步处理" 
+               enabled="false" />
 
     <!-- 未来新增的批处理作业 -->
     <!-- 只需要添加配置，代码零修改！ -->

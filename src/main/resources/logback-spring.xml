@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="10 seconds">
 
-    <!-- 日志文件存储路径 -->
-    <property name="LOG_HOME" value="logs" />
+    <!-- 日志文件存储路径 
+        智能判断路径："${LOG_PATH:-logs}"的意思是
+        如果环境变量 LOG_PATH 存在，就用它的值
+        如果不存在，就用默认值logs
+        LOG_PATH是生产环境下使用的变量值，生产环境的日志路径在setenv文件里。
+    -->
+    <property name="LOG_HOME" value="${LOG_PATH:-logs}" />
     <property name="APP_NAME" value="knpiano-batch" />
 
     <!-- 控制台输出 -->
