@@ -56,6 +56,15 @@
                target-description="次周自动排课处理"
                enabled="true" />
 
+    <!-- KNDB5000: 数据库备份 -->
+    <batch-job id="KNDB5000" 
+               bean-name="kndb5000Job" 
+               description="数据库定期备份" 
+               cron-expression="0 0 1 * * ?"
+               cron-description="每天凌晨1:00" 
+               target-description="数据库定期备份处理"
+               enabled="true" />
+               
     <!-- KNDB1020: 学生信息同步 -->
     <!-- <batch-job id="KNDB1020" 
                bean-name="kndb1020Job" 
