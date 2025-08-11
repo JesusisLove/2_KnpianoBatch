@@ -72,9 +72,9 @@ public class KNDB2030Tasklet implements Tasklet {
             addLog(logContent, "目标处理月份: " + yearMonth);
             logger.info("目标处理月份: {}", yearMonth);
             
-            // 步骤1: 获取排课钢琴错误级别的课程记录
-            addLog(logContent, "步骤1: 开始获取排课钢琴错误级别的课程记录...");
-            logger.info("步骤1: 开始获取排课钢琴错误级别的课程记录...");
+            // 步骤1: 确认预支付表里是否有预支付再调整的课程记录
+            addLog(logContent, "步骤1: 开始确认预支付表里是否有预支付再调整的课程记录...");
+            logger.info("步骤1: 开始确认预支付表里是否有预支付再调整的课程记录...");
             
             List<KNDB2030Entity> advcAdjustedList = kndb2030Dao.getAdvcLsnPayList(yearMonth);
             incorrectCount = advcAdjustedList.size();

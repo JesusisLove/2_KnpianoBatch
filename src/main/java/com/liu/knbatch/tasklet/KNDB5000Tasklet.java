@@ -220,15 +220,22 @@ public class KNDB5000Tasklet implements Tasklet {
      * 确定备份路径
      */
     private String determineBackupPath() {
-        // 如果配置了生产环境路径且存在，使用生产环境路径
+        StringBuilder logContent = new StringBuilder(); // 如果方法外部没有logContent，需要创建
+        
+        // 记录配置信息
+        addLog(logContent, "生产环境备份路径配置: " + (productionBackupPath != null ? productionBackupPath : "未配置"));
+        addLog(logContent, "本地备份路径配置: " + localBackupPath);
+        
+        // 如果配置了生产环境路径，直接使用（不检查父目录是否存在）
         if (productionBackupPath != null && !productionBackupPath.trim().isEmpty()) {
-            Path prodPath = Paths.get(productionBackupPath);
-            if (Files.exists(prodPath.getParent()) || prodPath.getParent() == null) {
-                return productionBackupPath;
-            }
+            addLog(logContent, "使用生产环境备份路径: " + productionBackupPath);
+            logger.info("使用生产环境备份路径: {}", productionBackupPath);
+            return productionBackupPath;
         }
         
         // 否则使用本地路径
+        addLog(logContent, "使用本地备份路径: " + localBackupPath);
+        logger.info("使用本地备份路径: {}", localBackupPath);
         return localBackupPath;
     }
     
