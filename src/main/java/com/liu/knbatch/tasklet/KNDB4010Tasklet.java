@@ -43,6 +43,7 @@ public class KNDB4010Tasklet implements Tasklet {
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         long startTime = System.currentTimeMillis();
         String batchName = "KNDB4010";
+        String description="自动排下周课程";
         boolean success = false;
         int processedCount = 0;
         int updatedCount = 0;
@@ -130,7 +131,7 @@ public class KNDB4010Tasklet implements Tasklet {
             throw e;
         } finally {
             // 发送邮件通知
-            sendEmailNotification(batchName, success, logContent.toString());
+            sendEmailNotification(batchName, description, success, logContent.toString());
         }
 
         return RepeatStatus.FINISHED;
@@ -180,10 +181,10 @@ public class KNDB4010Tasklet implements Tasklet {
     /**
      * 发送邮件通知
      */
-    private void sendEmailNotification(String jobName, boolean success, String logContent) {
+    private void sendEmailNotification(String jobName, String description, boolean success, String logContent) {
         try {
             if (emailService != null) {
-                emailService.sendBatchNotification(jobName, success, logContent);
+                emailService.sendBatchNotification(jobName, description, success, logContent);
                 logger.info("邮件通知发送完成 - jobName: {}, success: {}", jobName, success);
             } else {
                 logger.info("邮件服务未启用，跳过邮件发送 - jobName: {}", jobName);

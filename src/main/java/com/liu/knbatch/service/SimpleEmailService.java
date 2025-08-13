@@ -37,7 +37,7 @@ public class SimpleEmailService {
     /**
      * 发送批处理执行结果邮件（日志内容直接在邮件正文中）
      */
-    public void sendBatchNotification(String jobName, boolean success, String logContent) {
+    public void sendBatchNotification(String jobName, String jobDiscription, boolean success, String logContent) {
         try {
             // 检查必要配置
             if (fromEmail == null || fromEmail.trim().isEmpty() || 
@@ -68,7 +68,7 @@ public class SimpleEmailService {
             message.setSubject(subject);
             
             // 设置邮件正文（直接包含日志内容）
-            String emailContent = buildEmailContent(jobName, success, logContent);
+            String emailContent = buildEmailContent(jobName, jobDiscription, success, logContent);
             message.setText(emailContent);
             
             // 发送邮件
@@ -84,7 +84,7 @@ public class SimpleEmailService {
     /**
      * 构建邮件正文内容
      */
-    private String buildEmailContent(String jobName, boolean success, String logContent) {
+    private String buildEmailContent(String jobName, String jobDiscription, boolean success, String logContent) {
         StringBuilder content = new StringBuilder();
         
         // 邮件头部信息
@@ -92,7 +92,7 @@ public class SimpleEmailService {
         content.append("========================================\n\n");
         
         // 基本信息
-        content.append("任务名称: ").append(jobName).append("\n");
+        content.append("任务名称: ").append(jobName).append(" " + jobDiscription).append("\n");
         content.append("执行状态: ").append(success ? "成功" : "失败").append("\n");
         content.append("执行时间: ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss EEEE"))).append("\n");
         content.append("系统环境: 生产环境\n\n");

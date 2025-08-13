@@ -50,10 +50,10 @@
     <!-- KNDB4010: 每周自动排课 -->
     <batch-job id="KNDB4010" 
                bean-name="kndb4010Job"
-               description="次周自动排课"
+               description="自动排下周课程"
                cron-expression="0 0 20 ? * SUN"
                cron-description="每周日 20:00"
-               target-description="次周自动排课处理"
+               target-description="自动排下周课程处理"
                enabled="true" />
 
     <!-- KNDB5000: 数据库备份 -->

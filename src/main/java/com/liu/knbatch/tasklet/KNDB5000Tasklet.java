@@ -75,6 +75,7 @@ public class KNDB5000Tasklet implements Tasklet {
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         long startTime = System.currentTimeMillis();
         String batchName = "KNDB5000";
+        String description = "数据库定期备份";
         boolean success = false;
         StringBuilder logContent = new StringBuilder();
         KNDB5000Entity backupInfo = null;
@@ -202,7 +203,7 @@ public class KNDB5000Tasklet implements Tasklet {
             throw e;
         } finally {
             // 发送邮件通知
-            sendEmailNotification(batchName, success, logContent.toString(), backupInfo);
+            sendEmailNotification(batchName, description, success, logContent.toString(), backupInfo);
         }
     }
     
@@ -408,11 +409,11 @@ public class KNDB5000Tasklet implements Tasklet {
     /**
      * 发送邮件通知
      */
-    private void sendEmailNotification(String jobName, boolean success, String logContent, KNDB5000Entity backupInfo) {
+    private void sendEmailNotification(String jobName, String description, boolean success, String logContent, KNDB5000Entity backupInfo) {
         try {
             if (emailService != null) {
                 String content = buildEmailContent(success, logContent, backupInfo);
-                emailService.sendBatchNotification(jobName, success, content);
+                emailService.sendBatchNotification(jobName, description, success, content);
                 logger.info("邮件通知发送完成 - jobName: {}, success: {}", jobName, success);
             } else {
                 logger.info("邮件服务未启用，跳过邮件发送 - jobName: {}", jobName);

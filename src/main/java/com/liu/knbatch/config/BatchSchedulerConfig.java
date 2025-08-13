@@ -13,7 +13,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * @version 1.0.0
  */
 @Configuration
-public class SchedulerConfig {
+public class BatchSchedulerConfig {
     
     /**
      * 配置定时任务线程池

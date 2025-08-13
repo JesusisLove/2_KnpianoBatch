@@ -23,7 +23,7 @@
         WHERE 1 = 1
         AND NOT EXISTS (
         SELECT 1
-        FROM v_latest_subject_info_from_doc_tmp doc
+        FROM v_latest_subject_info_from_student_document doc
         WHERE doc.stu_id = lsn.stu_id
         AND doc.subject_id = lsn.subject_id
         AND doc.subject_sub_id = lsn.subject_sub_id
@@ -39,7 +39,7 @@
         WHERE 1 = 1
         AND NOT EXISTS (
         SELECT 1
-        FROM v_latest_subject_info_from_doc_tmp doc
+        FROM v_latest_subject_info_from_student_document doc
         WHERE doc.stu_id = lsn.stu_id
         AND doc.subject_id = lsn.subject_id
         AND doc.subject_sub_id = lsn.subject_sub_id
@@ -53,11 +53,11 @@
         UPDATE t_info_lesson lsn
         inner join
         -- 抽取要纠正级别课程的正确数据
-        (select doc1.* from v_latest_subject_info_from_doc_tmp doc1
+        (select doc1.* from v_latest_subject_info_from_student_document doc1
             inner join (
                 SELECT lsn.* FROM v_info_lesson lsn
                 WHERE 1 = 1
-                    AND NOT EXISTS (SELECT 1 FROM v_latest_subject_info_from_doc_tmp doc
+                    AND NOT EXISTS (SELECT 1 FROM v_latest_subject_info_from_student_document doc
                                     WHERE doc.stu_id = lsn.stu_id
                                         AND doc.subject_id = lsn.subject_id
                                         AND doc.subject_sub_id = lsn.subject_sub_id
@@ -72,7 +72,7 @@
         SET lsn.subject_sub_id = doc.subject_sub_id
         -- 对v_info_lesson里有错课的钢琴级别课程
         WHERE 1 = 1
-            AND NOT EXISTS (SELECT 1 FROM v_latest_subject_info_from_doc_tmp doc
+            AND NOT EXISTS (SELECT 1 FROM v_latest_subject_info_from_student_document doc
                             WHERE doc.stu_id = lsn.stu_id
                                 AND doc.subject_id = lsn.subject_id
                                 AND doc.subject_sub_id = lsn.subject_sub_id
