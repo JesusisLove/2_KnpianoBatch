@@ -3,6 +3,7 @@ package com.liu.knbatch;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -30,11 +31,11 @@ public class KnpianoBatchApplication {
         boolean isManualMode = hasManualJobParameter(args);
         
         if (isManualMode) {
-            // 手动执行模式：执行完退出
+            // 手动执行模式：执行完退出，不启动Web容器
             executeManualJob(args);
         } else {
-            // 服务模式：持续运行，等待定时任务
-            runAsService(args);
+            // Web服务模式：启动Web容器和批处理服务，持续运行
+            runAsWebService(args);
         }
     }
     
@@ -52,7 +53,7 @@ public class KnpianoBatchApplication {
     
     /**
      * 手动执行模式
-     * 使用开发环境配置，适合本地开发和批处理测试
+     * 使用开发环境配置，适合本地开发和批处理测试，不启动Web容器
      */
     private static void executeManualJob(String[] args) {
         System.setProperty("spring.profiles.active", "dev");
@@ -60,7 +61,10 @@ public class KnpianoBatchApplication {
         System.out.println("使用环境: 开发环境 (dev)");
         System.out.println("适用于: 本地开发、功能测试、问题排查");
         
-        ConfigurableApplicationContext context = SpringApplication.run(KnpianoBatchApplication.class, args);
+        // 创建非Web应用
+        SpringApplication app = new SpringApplication(KnpianoBatchApplication.class);
+        app.setWebApplicationType(WebApplicationType.NONE);
+        ConfigurableApplicationContext context = app.run(args);
         
         try {
             String jobName = getJobName(args, context);
@@ -76,24 +80,69 @@ public class KnpianoBatchApplication {
     }
     
     /**
-     * 自动执行模式：持续运行，等待定时任务
-     * 使用生产环境配置，适合生产部署和定时任务执行
+     * Web服务模式：启动Web容器和批处理服务
+     * 使用生产环境配置，同时提供Web管理界面和定时任务执行
      */
-    private static void runAsService(String[] args) {
+    private static void runAsWebService(String[] args) {
         System.setProperty("spring.profiles.active", "prod");
-        System.out.println("=== 自动执行模式 ===");
-        System.out.println("启动 KnPiano Batch 管理系统...");
-        System.out.println("系统将持续运行，等待定时任务执行");
+        System.out.println("=== Web服务模式 ===");
+        System.out.println("启动 KnPiano Batch Web 管理系统...");
+        System.out.println("Web管理界面: http://localhost:8081");
+        System.out.println("系统将持续运行，提供Web管理界面和定时任务执行");
         System.out.println("");
         
-        // 启动应用上下文
-        ConfigurableApplicationContext context = SpringApplication.run(KnpianoBatchApplication.class, args);
+
+ // 强制指定为Web应用
+    SpringApplication app = new SpringApplication(KnpianoBatchApplication.class);
+    app.setWebApplicationType(WebApplicationType.SERVLET);
+    ConfigurableApplicationContext context = app.run(args);
+    
+    // 启动完成后显示信息
+    displayWebServiceInfo(context);
+
+        // // 创建Web应用
+        // SpringApplication app = new SpringApplication(KnpianoBatchApplication.class);
+        // app.setWebApplicationType(WebApplicationType.SERVLET); // 明确指定为Web应用
+        // ConfigurableApplicationContext context = app.run(args);
         
-        try {
-            // 动态显示所有已注册的定时任务
+        // // 在Web容器启动后，初始化批处理服务信息显示
+        // context.getBean(KnpianoBatchApplication.class).initializeBatchServices(context);
+    }
+    
+
+
+    private static void displayWebServiceInfo(ConfigurableApplicationContext context) {
+    try {
+        BatchJobRegistry registry = context.getBean(BatchJobRegistry.class);
+        displayRegisteredJobs(registry.getAllJobs());
+        
+        System.out.println("Web管理界面已启动:");
+        System.out.println("  - 登录页面: http://localhost:8081");
+        System.out.println("  - 作业配置管理: http://localhost:8081/batch/job");
+        System.out.println("  - 邮件配置管理: http://localhost:8081/batch/mail");
+        System.out.println("=====================================");
+        
+    } catch (Exception e) {
+        System.err.println("批处理服务初始化警告: " + e.getMessage());
+    }
+}
+
+
+    /**
+     * 初始化批处理服务信息显示
+     * 这个方法在Web容器启动后调用，用于显示批处理服务信息
+     */
+    public void initializeBatchServices(ConfigurableApplicationContext context) {
+        try {  
+            // 显示批处理服务信息
             BatchJobRegistry registry = context.getBean(BatchJobRegistry.class);
             displayRegisteredJobs(registry.getAllJobs());
             
+            System.out.println("Web管理界面已启动:");
+            System.out.println("  - 登录页面: http://localhost:8081");
+            System.out.println("  - 作业配置管理: http://localhost:8081/batch/job");
+            System.out.println("  - 邮件配置管理: http://localhost:8081/batch/mail");
+            System.out.println("");
             System.out.println("日志查看:");
             System.out.println("  - 主日志: tail -f logs/knpiano-batch.log");
             System.out.println("  - 错误日志: tail -f logs/knpiano-batch-error.log");
@@ -103,10 +152,8 @@ public class KnpianoBatchApplication {
             System.err.println("获取批处理注册信息失败: " + e.getMessage());
             System.err.println("请检查 batch-jobs.xml 配置文件是否存在且格式正确");
             e.printStackTrace();
-            System.exit(1);  // 纯动态版本：配置文件必须存在，否则退出
+            // 注意：这里不退出应用，让Web服务继续运行
         }
-        
-        // 应用会持续运行，不会退出
     }
     
     /**

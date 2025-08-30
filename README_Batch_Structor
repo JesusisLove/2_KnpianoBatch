@@ -37,8 +37,10 @@ KnpianoBatch/                                   # 项目根目录
             ├── batch-jobs.xml                 # 🎯 核心动态配置文件
             ├── logback-spring.xml             # 日志配置（支持多环境）
             └── mybatis/
-                ├── mybatis-config.xml         # MyBatis全局配置
-                └── mapper/                    # SQL映射文件
-                    ├── KNDB1010Mapper.xml    # KNDB1010 SQL映射
-                    ├── KNDB1020Mapper.xml    # KNDB1020 SQL映射
-                    └── ...                   # 其他业务模块映射文件
+            │   ├── mybatis-config.xml         # MyBatis全局配置
+            │   └── mapper/                    # SQL映射文件
+            │        ├── KNDB1010Mapper.xml    # KNDB1010 SQL映射
+            │        ├── KNDB1020Mapper.xml    # KNDB1020 SQL映射
+            │        └── ...                   # 其他业务模块映射文件
+            └── templates/
+                    ├── xxxxxx.html

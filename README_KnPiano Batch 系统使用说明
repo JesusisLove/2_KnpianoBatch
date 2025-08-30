@@ -117,6 +117,8 @@ logging.level.org.springframework.scheduling=INFO
 
 # 补充 在开发阶段不打jar包的情况下，可以直接使用Maven命令来执行Spring Boot应用
 在开发阶段不打jar包的情况下，可以直接使用Maven命令来执行Spring Boot应用。基于你提供的jar包执行方式，对应的Maven命令应该是：
+0. 先运行下面的sh脚本加载变量
+source ./dev-env-setup.sh
 1. 手动执行批处理任务
 bash# 对应 java -jar knpiano-batch.jar --job.name=KNDB1010_MANUAL --base.date=20250131
 mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1010_MANUAL --base.date=20250131"

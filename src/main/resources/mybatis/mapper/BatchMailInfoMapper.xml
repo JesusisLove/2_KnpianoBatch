@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.liu.knbatch.dao.BatchMailConfigDao">
+
+    <!-- 结果映射 -->
+    <resultMap id="MailInfoMap" type="com.liu.knbatch.config.BatchMailInfo">
+        <result property="jobId" column="job_id" />
+        <result property="emailFrom" column="email_from" />
+        <result property="mailToDevloper" column="mail_to_devloper" />
+        <result property="emailToUser" column="email_to_user" />
+        <result property="mailContentForUser" column="mail_content_for_user" />
+    </resultMap>
+
+    <!-- 查询所有邮件配置信息 -->
+    <select id="selectAllMailInfo" resultMap="MailInfoMap">
+        SELECT 
+            job_id,
+            email_from,
+            mail_to_devloper,
+            email_to_user,
+            mail_content_for_user
+        FROM t_batch_mail_config 
+        ORDER BY job_id
+    </select>
+
+    <!-- 根据作业ID查询邮件配置信息 -->
+    <select id="selectMailInfo" parameterType="string" resultMap="MailInfoMap">
+        SELECT 
+            job_id,
+            email_from,
+            mail_to_devloper,
+            email_to_user,
+            mail_content_for_user
+        FROM t_batch_mail_config 
+        WHERE job_id = #{jobId}
+    </select>
+
+    <!-- 插入邮件配置信息 -->
+    <insert id="insertMailInfo" parameterType="com.liu.knbatch.config.BatchMailInfo">
+        INSERT INTO t_batch_mail_config (
+            job_id,
+            email_from,
+            mail_to_devloper,
+            email_to_user,
+            mail_content_for_user
+        ) VALUES (
+            #{jobId},
+            #{emailFrom},
+            #{mailToDevloper},
+            #{emailToUser},
+            #{mailContentForUser}
+        )
+    </insert>
+
+    <!-- 更新邮件配置信息 -->
+    <update id="updateMailInfo" parameterType="com.liu.knbatch.config.BatchMailInfo">
+        UPDATE t_batch_mail_config 
+        <set>
+            <if test="emailFrom != null">
+                email_from = #{emailFrom},
+            </if>
+            <if test="mailToDevloper != null">
+                mail_to_devloper = #{mailToDevloper},
+            </if>
+            <if test="emailToUser != null">
+                email_to_user = #{emailToUser},
+            </if>
+            <if test="mailContentForUser != null">
+                mail_content_for_user = #{mailContentForUser}
+            </if>
+        </set>
+        WHERE job_id = #{jobId}
+    </update>
+
+    <!-- 删除邮件配置信息 -->
+    <delete id="deleteMailInfo" parameterType="string">
+        DELETE FROM t_batch_mail_config 
+        WHERE job_id = #{jobId}
+    </delete>
+
+    <!-- 检查作业ID是否存在 -->
+    <select id="existsByJobId" parameterType="string" resultType="int">
+        SELECT COUNT(1) 
+        FROM t_batch_mail_config 
+        WHERE job_id = #{jobId}
+    </select>
+
+    <!-- 根据条件查询邮件配置信息（用于复杂查询） -->
+    <select id="selectMailInfoByConditions" parameterType="map" resultMap="MailInfoMap">
+        SELECT 
+            job_id,
+            email_from,
+            mail_to_devloper,
+            email_to_user,
+            mail_content_for_user
+        FROM t_batch_mail_config 
+        <where>
+            <if test="jobId != null and jobId != ''">
+                AND job_id = #{jobId}
+            </if>
+            <if test="emailFrom != null and emailFrom != ''">
+                AND email_from = #{emailFrom}
+            </if>
+            <if test="mailToDevloper != null and mailToDevloper != ''">
+                AND mail_to_devloper LIKE CONCAT('%', #{mailToDevloper}, '%')
+            </if>
+            <if test="emailToUser != null and emailToUser != ''">
+                AND email_to_user LIKE CONCAT('%', #{emailToUser}, '%')
+            </if>
+        </where>
+        ORDER BY job_id
+    </select>
+
+</mapper>

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>批处理作业配置编辑</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../assets/dist/css/bootstrap.css" th:href="@{/webjars/bootstrap/4.5.0/css/bootstrap.css}"
+        rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container-fluid {
+            padding: 20px;
+        }
+
+        /* 页面标题样式 */
+        .page-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 35px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            text-align: center;
+        }
+
+        .page-title h2 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 28px;
+        }
+
+        /* 表单区域样式 */
+        .form-section {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 6px 20px rgba(255, 183, 77, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #ffb74d;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #ff9800;
+            box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.25);
+            background: white;
+        }
+
+        .form-control[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+
+        /* 按钮样式 */
+        .btn-primary {
+            background: linear-gradient(45deg, #2196f3, #1976d2);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        /* 错误消息样式 */
+        .alert-danger {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border: 2px solid #f44336;
+            border-radius: 12px;
+            color: #c62828;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+                
+                <!-- 页面标题 -->
+                <div class="page-title">
+                    <h2 th:text="${selectedJob != null ? '批处理作业配置编辑' : '批处理作业配置追加'}"></h2>
+                </div>
+
+                <!-- 显示错误消息 -->
+                <div th:if="${errorMessageList}" class="alert alert-danger" role="alert">
+                    <div th:each="errorMessage : ${errorMessageList}">
+                        <p th:text="${errorMessage}"></p>
+                    </div>
+                </div>
+
+                <!-- 表单区域 -->
+                <div class="form-section">
+                    <form th:action="@{/batch/job}" method="post">
+                        <input type="hidden" name="_method" value="put" th:if="${selectedJob != null}" />
+                        
+                        <div class="form-group">
+                            <label>作业ID</label>
+                            <input name="jobId" type="text" class="form-control" 
+                                placeholder="作业ID" 
+                                th:value="${selectedJob != null ? selectedJob.jobId : ''}"
+                                th:readonly="${selectedJob != null}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Bean名称</label>
+                            <input name="beanName" type="text" class="form-control" 
+                                placeholder="Bean名称"
+                                th:value="${selectedJob != null ? selectedJob.beanName : ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>作业描述</label>
+                            <input name="description" type="text" class="form-control" 
+                                placeholder="作业描述"
+                                th:value="${selectedJob != null ? selectedJob.description : ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Cron表达式</label>
+                            <input name="cronExpression" type="text" class="form-control" 
+                                placeholder="例：0 0 1 * * ?"
+                                th:value="${selectedJob != null ? selectedJob.cronExpression : ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Cron描述</label>
+                            <input name="cronDescription" type="text" class="form-control" 
+                                placeholder="Cron表达式说明"
+                                th:value="${selectedJob != null ? selectedJob.cronDescription : ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>目标描述</label>
+                            <input name="targetDescription" type="text" class="form-control" 
+                                placeholder="目标处理说明"
+                                th:value="${selectedJob != null ? selectedJob.targetDescription : ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>是否启用</label>
+                            <select name="enabled" class="form-control">
+                                <option value="true" th:selected="${selectedJob != null and selectedJob.enabled == true}">启用</option>
+                                <option value="false" th:selected="${selectedJob != null and selectedJob.enabled == false}">停用</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-primary">保存</button>
+                            <a class="btn btn-secondary" th:href="@{/batch/job}">取消</a>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.5.1/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/popper.js/1.16.0/umd/popper.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/4.5.0/js/bootstrap.min.js}"></script>
+</body>
+
+</html>
