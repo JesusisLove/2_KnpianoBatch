@@ -1,5 +1,7 @@
 package com.liu.knbatch.tasklet;
 
+import com.liu.knbatch.config.BatchMailInfo;
+import com.liu.knbatch.dao.BatchMailConfigDao;
 import com.liu.knbatch.dao.KNDB1010Dao;
 import com.liu.knbatch.entity.KNDB1010Entity;
 import com.liu.knbatch.service.SimpleEmailService;
@@ -36,21 +38,27 @@ public class KNDB1010Tasklet implements Tasklet {
     private static final Logger logger = LoggerFactory.getLogger(KNDB1010Tasklet.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
+
+    private String jobId = "KNDB1010";
     
     @Autowired
     private KNDB1010Dao kndb1010Dao;
+    @Autowired
+    private BatchMailConfigDao mailDao;
 
     @Autowired(required = false)
     private SimpleEmailService emailService;
+
+    private int incorrectCount = 0;
+    private int updatedCount = 0;
+    List<KNDB1010Entity> incorrectLessons;
     
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         long startTime = System.currentTimeMillis();
         String batchName = "KNDB1010";
         String description = "钢琴课程级别矫正";
-        boolean success = false;
-        int incorrectCount = 0;
-        int updatedCount = 0;
+        boolean success = false; 
         StringBuilder logContent = new StringBuilder();
         
         addLog(logContent, "========== " + batchName + " 批处理开始执行 ==========");
@@ -77,7 +85,7 @@ public class KNDB1010Tasklet implements Tasklet {
             addLog(logContent, "步骤1: 开始获取排课钢琴错误级别的课程记录...");
             logger.info("步骤1: 开始获取排课钢琴错误级别的课程记录...");
             
-            List<KNDB1010Entity> incorrectLessons = kndb1010Dao.selectIncorrectPianoLevelLessons(targetMonth);
+            incorrectLessons = kndb1010Dao.selectIncorrectPianoLevelLessons(targetMonth);
             incorrectCount = incorrectLessons.size();
             
             addLog(logContent, "步骤1: 完成 - 发现错误级别课程记录数: " + incorrectCount);
@@ -206,9 +214,46 @@ public class KNDB1010Tasklet implements Tasklet {
      * 发送邮件通知
      */
     private void sendEmailNotification(String jobName, String description, boolean success, String logContent) {
+
+        // 从数据库邮件管理表提取邮件管理信息
+        BatchMailInfo mailInfo = mailDao.selectMailInfo(jobId);
+
         try {
             if (emailService != null) {
+                emailService.setFromEmail(mailInfo.getEmailFrom());
+                // 给程序维护者发送邮件
+                emailService.setToEmails(mailInfo.getMailToDevloper());
                 emailService.sendBatchNotification(jobName, description, success, logContent);
+
+                // 如果用户邮件不为空，则给用户发送邮件
+                if (!mailInfo.getEmailToUser().isEmpty()){
+                    emailService.setToEmails(mailInfo.getEmailToUser());
+                    StringBuilder useMailContent = new StringBuilder();
+                    if (this.incorrectCount == 0) {
+                        useMailContent.append("没有发现学生排课数据异常")
+                                      .append(System.lineSeparator()); // 追加换行符
+                    } else {
+                        useMailContent.append("排课中发现课程级别的错误数是：")
+                                      .append(this.incorrectCount)
+                                      .append("个")
+                                      .append(System.lineSeparator());
+                        useMailContent.append("详细记录信息如下：").append(System.lineSeparator());
+                        for(KNDB1010Entity kndb1010 : incorrectLessons ) {
+                            useMailContent.append("  ");
+                            useMailContent.append(kndb1010.getStuName());
+                            useMailContent.append(" : 这个月开始的课程级别是：");
+                            useMailContent.append(kndb1010.getSubjectName()).append("-").append(kndb1010.getSubjectSubName());
+                            useMailContent.append(System.lineSeparator()); // 追加换行符                            
+                        }
+                        useMailContent.append("上述学生的课程级别，KNPiano批处理系统已更新").append(System.lineSeparator());
+                        useMailContent.append("更新件数 : ").append(this.updatedCount).append("个").append(System.lineSeparator());
+                    }
+
+
+
+                    emailService.sendBatchNotification(jobName, description, success, useMailContent.toString());
+                }
+
                 logger.info("邮件通知发送完成 - jobName: {}, success: {}", jobName, success);
             } else {
                 logger.info("邮件服务未启用，跳过邮件发送 - jobName: {}", jobName);

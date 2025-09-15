@@ -18,7 +18,9 @@
         
         .container-fluid {
             padding: 20px;
-            max-width: 1400px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* 页面标题样式 */
@@ -56,38 +58,30 @@
             box-shadow: 0 4px 15px rgba(0, 188, 212, 0.2);
         }
 
-        /* 新增按钮区域样式 */
-        .action-section {
-            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
-            text-align: center;
+        /* 上半部分容器 */
+        .upper-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
-        .action-section .btn-success {
-            background: linear-gradient(45deg, #4caf50, #8bc34a);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 16px;
-            transition: all 0.3s ease;
+        /* 下半部分容器 */
+        .lower-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
-        .action-section .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-        }
-
-        /* 搜索区域样式 */
+        /* 搜索区域样式 - 包含追加按钮 */
         .search-section {
             background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);
             border-radius: 15px;
             padding: 30px;
             margin: 20px 0;
             box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
+            flex-grow: 1;
         }
 
         .search-section .form-control {
@@ -121,6 +115,25 @@
             box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
         }
 
+        /* 追加按钮样式 - 在搜索区域内 */
+        .btn-add-in-search {
+            background: linear-gradient(45deg, #4caf50, #8bc34a);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .btn-add-in-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            color: white;
+        }
+
         /* 状态信息样式 */
         .status-info {
             background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
@@ -137,12 +150,17 @@
             padding: 25px;
             margin: 20px 0;
             box-shadow: 0 6px 20px rgba(255, 183, 77, 0.3);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
         .table-responsive {
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
         }
 
         .styled-table {
@@ -151,6 +169,7 @@
             border: none;
             width: 100%;
             table-layout: auto;
+            height: 100%;
         }
 
         .styled-table thead th {
@@ -158,12 +177,11 @@
             color: white;
             font-weight: 700;
             text-align: center;
-            padding: 15px 10px;
+            padding: 15px 8px;
             border: 1px solid #607d8b;
-            font-size: 14px;
+            font-size: 13px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
             letter-spacing: 0.5px;
-            white-space: nowrap;
         }
 
         .styled-table tbody tr {
@@ -180,21 +198,22 @@
 
         .styled-table tbody tr:hover {
             background: #fff3e0;
-            transform: scale(1.005);
+            transform: scale(1.01);
             box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
         }
 
         .styled-table tbody td {
-            padding: 12px 10px;
-            vertical-align: top;
+            padding: 12px 8px;
+            vertical-align: middle;
             border-bottom: 1px solid #ffe0b2;
-            font-size: 13px;
+            font-size: 18px; /* 和作业配置管理页面一致 */
             font-weight: 500;
-            border-left: 1px solid #ffe0b2;
-            border-right: 1px solid #ffe0b2;
+            text-align: center;
+            word-wrap: break-word;
+            max-width: 150px;
         }
 
-        /* 列宽度控制 */
+        /* 列宽度控制 - 保持邮件配置的列定义 */
         .col-job-id {
             width: 12%;
             text-align: center;
@@ -230,6 +249,7 @@
         .email-display {
             word-break: break-word;
             line-height: 1.4;
+            font-size: 18px; /* 和作业配置管理页面一致 */
         }
 
         .content-display {
@@ -239,12 +259,14 @@
             line-height: 1.4;
             max-height: 120px;
             overflow-y: auto;
+            font-size: 18px; /* 和作业配置管理页面一致 */
         }
 
         .email-item {
             display: block;
             margin-bottom: 2px;
             padding: 1px 0;
+            font-size: 18px; /* 和作业配置管理页面一致 */
         }
 
         /* 操作按钮样式 */
@@ -252,8 +274,8 @@
             background: linear-gradient(45deg, #2196f3, #1976d2);
             border: none;
             border-radius: 15px;
-            padding: 6px 12px;
-            font-size: 11px;
+            padding: 5px 12px;
+            font-size: 16px; /* 和作业配置管理页面一致 */
             font-weight: 600;
             transition: all 0.3s ease;
         }
@@ -293,172 +315,149 @@
             text-align: center;
             color: #666;
             font-style: italic;
-            padding: 40px;
+            padding: 30px;
+            font-size: 18px; /* 和作业配置管理页面一致 */
         }
 
-        /* 响应式设计 */
-        @media (max-width: 1200px) {
-            .styled-table {
-                font-size: 12px;
-            }
-            
-            .styled-table thead th {
-                padding: 12px 8px;
-                font-size: 12px;
-            }
-            
-            .styled-table tbody td {
-                padding: 10px 8px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container-fluid {
-                padding: 10px;
-            }
-            
-            .page-title h2 {
-                font-size: 24px;
-            }
-            
-            .styled-table {
-                font-size: 11px;
-            }
-            
-            .col-mail-content {
-                max-width: 150px;
-            }
+        /* 页面底部信息 */
+        .footer-info {
+            margin-top: 10px;
+            flex-shrink: 0;
         }
     </style>
 </head>
 
 <body>
     <div class="container-fluid">
-        <!-- 页面标题 -->
-        <div class="page-title">
-            <h2>批处理邮件配置管理</h2>
-        </div>
+        <!-- 上半部分 -->
+        <div class="upper-section">
+            <!-- 页面标题 -->
+            <div class="page-title">
+                <h2>批处理邮件配置管理</h2>
+            </div>
 
-        <!-- 导航按钮 -->
-        <div class="nav-buttons">
-            <a href="/main.html" class="btn btn-secondary">返回主菜单</a>
-            <a href="/batch/job" class="btn btn-info">作业配置管理</a>
-        </div>
+            <!-- 导航按钮 -->
+            <div class="nav-buttons">
+                <a href="/main.html" class="btn btn-secondary">返回主菜单</a>
+                <a href="/batch/job" class="btn btn-info">作业配置管理</a>
+            </div>
 
-        <!-- 业务说明 -->
-        <div class="business-description">
-            <p><strong>业务说明：</strong>管理批处理邮件配置信息，包括发送方邮箱、接收方邮箱、邮件内容等的查询、新增、修改功能</p>
-        </div>
+            <!-- 业务说明 -->
+            <div class="business-description">
+                <p><strong>业务说明：</strong>管理批处理邮件配置信息，包括发送方邮箱、接收方邮箱、邮件内容等的查询、新增、修改功能</p>
+            </div>
 
-        <!-- 数据状态信息 -->
-        <div th:if="${mailList != null and !mailList.isEmpty()}" class="alert alert-success" role="alert">
-            成功加载 <strong th:text="${mailList.size()}">0</strong> 条邮件配置记录
-        </div>
+            <!-- 数据状态信息 -->
+            <div th:if="${mailList != null and !mailList.isEmpty()}" class="alert alert-success" role="alert">
+                成功加载 <strong th:text="${mailList.size()}">0</strong> 条邮件配置记录
+            </div>
 
-        <div th:if="${mailList == null or mailList.isEmpty()}" class="alert alert-info" role="alert">
-            当前没有邮件配置数据，请点击"追加新邮件配置"按钮添加数据
-        </div>
+            <div th:if="${mailList == null or mailList.isEmpty()}" class="alert alert-info" role="alert">
+                当前没有邮件配置数据，请点击"追加新邮件配置"按钮添加数据
+            </div>
 
-        <!-- 追加按钮区域 -->
-        <div class="action-section">
-            <a class="btn btn-success btn-lg" th:href="@{/batch/mail/add}">
-                + 追加新邮件配置
-            </a>
-        </div>
-
-        <hr style="border: 2px solid #ddd; border-radius: 2px;">
-
-        <!-- 检索区域 -->
-        <div class="search-section">
-            <h5 class="mb-3" style="color: #e65100; font-weight: bold;">邮件配置检索</h5>
-            <form action="#" th:action="@{/batch/mail/search}" method="get">
-                <div class="form-row align-items-end">
-                    <div class="form-group col-md-8">
-                        <label for="jobId" class="font-weight-bold">作业ID：</label>
-                        <input type="text" class="form-control" id="jobId" name="jobId"
-                            th:value="${searchJobId}" placeholder="请输入作业ID进行精确查询">
+            <!-- 检索区域（包含追加按钮） -->
+            <div class="search-section">
+                <h5 class="mb-3" style="color: #e65100; font-weight: bold;">邮件配置检索</h5>
+                <form action="#" th:action="@{/batch/mail/search}" method="get">
+                    <div class="form-row align-items-end">
+                        <div class="form-group col-md-8">
+                            <label for="jobId" class="font-weight-bold">作业ID：</label>
+                            <input type="text" class="form-control" id="jobId" name="jobId"
+                                th:value="${searchJobId}" placeholder="请输入作业ID进行精确查询">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <button type="submit" class="btn btn-search btn-block">
+                                检索
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group col-md-4">
-                        <button type="submit" class="btn btn-search btn-block">
-                            检索
-                        </button>
-                    </div>
+                    <!-- <small class="text-muted">提示：留空将显示所有邮件配置</small> -->
+                </form>
+                
+                <!-- 追加按钮放在搜索区域内 -->
+                <div class="text-center">
+                    <a class="btn btn-add-in-search btn-lg" th:href="@{/batch/mail/add}">
+                        + 追加新邮件配置
+                    </a>
                 </div>
-                <small class="text-muted">提示：留空将显示所有邮件配置</small>
-            </form>
+            </div>
+
+            <!-- 显示错误消息 -->
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <strong>错误：</strong><span th:text="${errorMessage}">错误信息</span>
+            </div>
         </div>
 
-        <!-- 显示错误消息 -->
-        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-            <strong>错误：</strong><span th:text="${errorMessage}">错误信息</span>
-        </div>
-
-        <!-- 明细表格区域 -->
-        <div class="table-section">
-            <h5 class="mb-3" style="color: #e65100; font-weight: bold;">邮件配置明细</h5>
-            <div class="table-responsive">
-                <table class="table table-striped table-sm styled-table">
-                    <thead>
-                        <tr>
-                            <th class="col-job-id">作业ID</th>
-                            <th class="col-email-from">发送方邮箱</th>
-                            <th class="col-mail-to-dev">开发者邮箱</th>
-                            <th class="col-email-to-user">用户邮箱</th>
-                            <th class="col-mail-content">用户邮件内容</th>
-                            <th class="col-actions">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- 有数据时显示数据 -->
-                        <tr th:each="mail:${mailList}" th:if="${mailList != null and !mailList.isEmpty()}">
-                            <td class="col-job-id">
-                                <strong th:text="${mail.jobId}">作业ID</strong>
-                            </td>
-                            <td class="col-email-from">
-                                <code th:text="${mail.emailFrom}">发送方邮箱</code>
-                            </td>
-                            <td class="col-mail-to-dev">
-                                <div class="email-display" th:if="${mail.mailToDevloper != null and !mail.mailToDevloper.isEmpty()}">
-                                    <span th:each="email, iterStat : ${#strings.listSplit(mail.mailToDevloper, ',')}" 
-                                          class="email-item" th:text="${#strings.trim(email)}">邮箱</span>
-                                </div>
-                                <span th:if="${mail.mailToDevloper == null or mail.mailToDevloper.isEmpty()}" class="text-muted">未设置</span>
-                            </td>
-                            <td class="col-email-to-user">
-                                <div class="email-display" th:if="${mail.emailToUser != null and !mail.emailToUser.isEmpty()}">
-                                    <span th:each="email, iterStat : ${#strings.listSplit(mail.emailToUser, ',')}" 
-                                          class="email-item" th:text="${#strings.trim(email)}">邮箱</span>
-                                </div>
-                                <span th:if="${mail.emailToUser == null or mail.emailToUser.isEmpty()}" class="text-muted">未设置</span>
-                            </td>
-                            <td class="col-mail-content">
-                                <div class="content-display" th:if="${mail.mailContentForUser != null and !mail.mailContentForUser.isEmpty()}" 
-                                     th:text="${mail.mailContentForUser}" title="点击查看完整内容">邮件内容</div>
-                                <span th:if="${mail.mailContentForUser == null or mail.mailContentForUser.isEmpty()}" class="text-muted">未设置</span>
-                            </td>
-                            <td class="col-actions">
-                                <a class="btn btn-sm btn-primary" th:href="@{/batch/mail/}+${mail.jobId}" 
-                                   title="编辑此邮件配置">
-                                    编辑
-                                </a>
-                            </td>
-                        </tr>
-                        <!-- 无数据时显示提示 -->
-                        <tr th:if="${mailList == null or mailList.isEmpty()}">
-                            <td colspan="6" class="empty-data">
-                                <div>
-                                    <p style="font-size: 18px; margin-bottom: 10px;">暂无邮件配置数据</p>
-                                    <p style="color: #999;">请点击上方"追加新邮件配置"按钮添加数据</p>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- 下半部分 -->
+        <div class="lower-section">
+            <!-- 明细表格区域 -->
+            <div class="table-section">
+                <h5 class="mb-3" style="color: #e65100; font-weight: bold;">邮件配置明细</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm styled-table">
+                        <thead>
+                            <tr>
+                                <th class="col-job-id">作业ID</th>
+                                <th class="col-email-from">发送方邮箱</th>
+                                <th class="col-mail-to-dev">开发者邮箱</th>
+                                <th class="col-email-to-user">用户邮箱</th>
+                                <th class="col-mail-content">用户邮件内容</th>
+                                <th class="col-actions">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 有数据时显示数据 -->
+                            <tr th:each="mail:${mailList}" th:if="${mailList != null and !mailList.isEmpty()}">
+                                <td class="col-job-id">
+                                    <strong th:text="${mail.jobId}">作业ID</strong>
+                                </td>
+                                <td class="col-email-from">
+                                    <code th:text="${mail.emailFrom}">发送方邮箱</code>
+                                </td>
+                                <td class="col-mail-to-dev">
+                                    <div class="email-display" th:if="${mail.mailToDevloper != null and !mail.mailToDevloper.isEmpty()}">
+                                        <span th:each="email, iterStat : ${#strings.listSplit(mail.mailToDevloper, ',')}" 
+                                              class="email-item" th:text="${#strings.trim(email)}">邮箱</span>
+                                    </div>
+                                    <span th:if="${mail.mailToDevloper == null or mail.mailToDevloper.isEmpty()}" class="text-muted">未设置</span>
+                                </td>
+                                <td class="col-email-to-user">
+                                    <div class="email-display" th:if="${mail.emailToUser != null and !mail.emailToUser.isEmpty()}">
+                                        <span th:each="email, iterStat : ${#strings.listSplit(mail.emailToUser, ',')}" 
+                                              class="email-item" th:text="${#strings.trim(email)}">邮箱</span>
+                                    </div>
+                                    <span th:if="${mail.emailToUser == null or mail.emailToUser.isEmpty()}" class="text-muted">未设置</span>
+                                </td>
+                                <td class="col-mail-content">
+                                    <div class="content-display" th:if="${mail.mailContentForUser != null and !mail.mailContentForUser.isEmpty()}" 
+                                         th:text="${mail.mailContentForUser}" title="点击查看完整内容">邮件内容</div>
+                                    <span th:if="${mail.mailContentForUser == null or mail.mailContentForUser.isEmpty()}" class="text-muted">未设置</span>
+                                </td>
+                                <td class="col-actions">
+                                    <a class="btn btn-sm btn-primary" th:href="@{/batch/mail/}+${mail.jobId}" 
+                                       title="编辑此邮件配置">
+                                        编辑
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- 无数据时显示提示 -->
+                            <tr th:if="${mailList == null or mailList.isEmpty()}">
+                                <td colspan="6" class="empty-data">
+                                    <div>
+                                        <p style="font-size: 18px; margin-bottom: 10px;">暂无邮件配置数据</p>
+                                        <p style="color: #999;">请点击上方"追加新邮件配置"按钮添加数据</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- 页面底部信息 -->
-        <div class="text-center text-muted mt-4">
+        <div class="text-center text-muted footer-info">
             <small>KNPiano 批处理管理系统 - 邮件配置管理模块</small>
         </div>
     </div>

@@ -70,4 +70,5 @@ BOOT-INF/
 .factorypath
 
 # 忽略工具文件
-dev-env-setup.sh
+setup-env-prod.sh
+setup-env-test_or_dev.sh

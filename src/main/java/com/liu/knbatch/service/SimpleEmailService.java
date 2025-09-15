@@ -21,13 +21,19 @@ public class SimpleEmailService {
     @Autowired
     private JavaMailSender mailSender;
     
-    @Value("${knbatch.email.from:}")
+    // @Value("${knbatch.email.from:}")
     private String fromEmail;
-    
+    public void setFromEmail(String fromEmail) {
+        this.fromEmail = fromEmail;
+    }
+
     // 修改：改为String类型，支持逗号分隔的多个邮箱
-    @Value("${knbatch.email.to}")
+    // @Value("${knbatch.email.to}")
     private String toEmails;
-    
+    public void setToEmails(String toEmails) {
+        this.toEmails = toEmails;
+    }
+
     @Value("${knbatch.email.send-on-success:true}")
     private boolean sendOnSuccess;
     
@@ -99,7 +105,7 @@ public class SimpleEmailService {
         
         // 分隔线
         content.append("执行日志:\n");
-        content.append("----------------------------------------\n");
+        content.append("★----------------------------------------\n");
         
         // 日志内容（直接放在邮件正文中）
         if (logContent != null && !logContent.trim().isEmpty()) {
@@ -109,7 +115,7 @@ public class SimpleEmailService {
         }
         
         // 邮件尾部
-        content.append("\n----------------------------------------\n");
+        content.append("\n★----------------------------------------\n");
         content.append("此邮件由 KNPiano 批处理系统自动发送\n");
         content.append("发送时间: ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         

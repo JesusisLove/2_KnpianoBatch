@@ -18,6 +18,9 @@
         
         .container-fluid {
             padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* 页面标题样式 */
@@ -55,38 +58,30 @@
             box-shadow: 0 4px 15px rgba(0, 188, 212, 0.2);
         }
 
-        /* 新增按钮区域样式 */
-        .action-section {
-            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
-            text-align: center;
+        /* 上半部分容器 */
+        .upper-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
-        .action-section .btn-success {
-            background: linear-gradient(45deg, #4caf50, #8bc34a);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 16px;
-            transition: all 0.3s ease;
+        /* 下半部分容器 */
+        .lower-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
-        .action-section .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-        }
-
-        /* 搜索区域样式 */
+        /* 搜索区域样式 - 包含追加按钮 */
         .search-section {
             background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);
             border-radius: 15px;
             padding: 30px;
             margin: 20px 0;
             box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
+            flex-grow: 1;
         }
 
         .search-section .form-control {
@@ -120,6 +115,25 @@
             box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
         }
 
+        /* 追加按钮样式 - 在搜索区域内 */
+        .btn-add-in-search {
+            background: linear-gradient(45deg, #4caf50, #8bc34a);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .btn-add-in-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            color: white;
+        }
+
         /* 状态信息样式 */
         .status-info {
             background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
@@ -136,18 +150,24 @@
             padding: 25px;
             margin: 20px 0;
             box-shadow: 0 6px 20px rgba(255, 183, 77, 0.3);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
         .table-responsive {
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
         }
 
         .styled-table {
             background: white;
             margin: 0;
             border: none;
+            height: 100%;
         }
 
         .styled-table thead th {
@@ -184,7 +204,7 @@
             padding: 12px 8px;
             vertical-align: middle;
             border-bottom: 1px solid #ffe0b2;
-            font-size: 12px;
+            font-size: 18px; /* 字体放大1.5倍 从12px变成18px */
             font-weight: 500;
             text-align: center;
             word-wrap: break-word;
@@ -197,7 +217,7 @@
             border: none;
             border-radius: 15px;
             padding: 5px 12px;
-            font-size: 11px;
+            font-size: 16px; /* 按钮字体也相应调整 */
             font-weight: 600;
             transition: all 0.3s ease;
         }
@@ -238,147 +258,160 @@
             color: #666;
             font-style: italic;
             padding: 30px;
+            font-size: 18px; /* 空数据提示字体也相应调整 */
         }
 
         /* 状态标签样式 */
         .status-enabled {
             color: #4caf50;
             font-weight: bold;
+            font-size: 18px; /* 状态字体也调整 */
         }
 
         .status-disabled {
             color: #f44336;
             font-weight: bold;
+            font-size: 18px; /* 状态字体也调整 */
+        }
+
+        /* 页面底部信息 */
+        .footer-info {
+            margin-top: 10px;
+            flex-shrink: 0;
         }
     </style>
 </head>
 
 <body>
     <div class="container-fluid">
-        <!-- 页面标题 -->
-        <div class="page-title">
-            <h2>批处理作业配置管理</h2>
-        </div>
+        <!-- 上半部分 -->
+        <div class="upper-section">
+            <!-- 页面标题 -->
+            <div class="page-title">
+                <h2>批处理作业配置管理</h2>
+            </div>
 
-        <!-- 导航按钮 -->
-        <div class="nav-buttons">
-            <a href="/main.html" class="btn btn-secondary">返回主菜单</a>
-            <a href="/batch/mail" class="btn btn-info">邮件配置管理</a>
-        </div>
+            <!-- 导航按钮 -->
+            <div class="nav-buttons">
+                <a href="/main.html" class="btn btn-secondary">返回主菜单</a>
+                <a href="/batch/mail" class="btn btn-info">邮件配置管理</a>
+            </div>
 
-        <!-- 业务说明 -->
-        <div class="business-description">
-            <p><strong>业务说明：</strong>管理批处理作业配置信息，包括作业ID、Bean名称、Cron表达式等的查询、新增、修改功能</p>
-        </div>
+            <!-- 业务说明 -->
+            <div class="business-description">
+                <p><strong>业务说明：</strong>管理批处理作业配置信息，包括作业ID、Bean名称、Cron表达式等的查询、新增、修改功能</p>
+            </div>
 
-        <!-- 数据状态信息 -->
-        <div th:if="${jobList != null and !jobList.isEmpty()}" class="alert alert-success" role="alert">
-            成功加载 <strong th:text="${jobList.size()}">0</strong> 条作业配置记录
-        </div>
+            <!-- 数据状态信息 -->
+            <div th:if="${jobList != null and !jobList.isEmpty()}" class="alert alert-success" role="alert">
+                成功加载 <strong th:text="${jobList.size()}">0</strong> 条作业配置记录
+            </div>
 
-        <div th:if="${jobList == null or jobList.isEmpty()}" class="alert alert-info" role="alert">
-            当前没有作业配置数据，请点击"追加新作业配置"按钮添加数据
-        </div>
+            <div th:if="${jobList == null or jobList.isEmpty()}" class="alert alert-info" role="alert">
+                当前没有作业配置数据，请点击"追加新作业配置"按钮添加数据
+            </div>
 
-        <!-- 追加按钮区域 -->
-        <div class="action-section">
-            <a class="btn btn-success btn-lg" th:href="@{/batch/job/add}">
-                + 追加新作业配置
-            </a>
-        </div>
-
-        <hr style="border: 2px solid #ddd; border-radius: 2px;">
-
-        <!-- 检索区域 -->
-        <div class="search-section">
-            <h5 class="mb-3" style="color: #e65100; font-weight: bold;">作业配置检索</h5>
-            <form action="#" th:action="@{/batch/job/search}" method="get">
-                <div class="form-row align-items-end">
-                    <div class="form-group col-md-8">
-                        <label for="jobId" class="font-weight-bold">作业ID：</label>
-                        <input type="text" class="form-control" id="jobId" name="jobId"
-                            th:value="${searchJobId}" placeholder="请输入作业ID进行精确查询">
+            <!-- 检索区域（包含追加按钮） -->
+            <div class="search-section">
+                <h5 class="mb-3" style="color: #e65100; font-weight: bold;">作业配置检索</h5>
+                <form action="#" th:action="@{/batch/job/search}" method="get">
+                    <div class="form-row align-items-end">
+                        <div class="form-group col-md-8">
+                            <label for="jobId" class="font-weight-bold">作业ID：</label>
+                            <input type="text" class="form-control" id="jobId" name="jobId"
+                                th:value="${searchJobId}" placeholder="请输入作业ID进行精确查询">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <button type="submit" class="btn btn-search btn-block">
+                                检索
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group col-md-4">
-                        <button type="submit" class="btn btn-search btn-block">
-                            检索
-                        </button>
-                    </div>
+                    <small class="text-muted">提示：留空将显示所有作业配置</small>
+                </form>
+                
+                <!-- 追加按钮放在搜索区域内 -->
+                <div class="text-center">
+                    <a class="btn btn-add-in-search btn-lg" th:href="@{/batch/job/add}">
+                        + 追加新作业配置
+                    </a>
                 </div>
-                <small class="text-muted">提示：留空将显示所有作业配置</small>
-            </form>
+            </div>
+
+            <!-- 显示错误消息 -->
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <strong>错误：</strong><span th:text="${errorMessage}">错误信息</span>
+            </div>
         </div>
 
-        <!-- 显示错误消息 -->
-        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-            <strong>错误：</strong><span th:text="${errorMessage}">错误信息</span>
-        </div>
-
-        <!-- 明细表格区域 -->
-        <div class="table-section">
-            <h5 class="mb-3" style="color: #e65100; font-weight: bold;">作业配置明细</h5>
-            <div class="table-responsive">
-                <table class="table table-striped table-sm styled-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">作业ID</th>
-                            <th width="12%">Bean名称</th>
-                            <th width="15%">作业描述</th>
-                            <th width="12%">Cron表达式</th>
-                            <th width="15%">Cron描述</th>
-                            <th width="15%">目标描述</th>
-                            <th width="8%">启用状态</th>
-                            <th width="13%">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- 有数据时显示数据 -->
-                        <tr th:each="job:${jobList}" th:if="${jobList != null and !jobList.isEmpty()}">
-                            <td>
-                                <strong th:text="${job.jobId}">作业ID</strong>
-                            </td>
-                            <td>
-                                <code th:text="${job.beanName}">Bean名称</code>
-                            </td>
-                            <td th:text="${job.description}" title="${job.description}">
-                                作业描述
-                            </td>
-                            <td>
-                                <code th:text="${job.cronExpression}" title="${job.cronExpression}">Cron表达式</code>
-                            </td>
-                            <td th:text="${job.cronDescription}" title="${job.cronDescription}">
-                                Cron描述
-                            </td>
-                            <td th:text="${job.targetDescription}" title="${job.targetDescription}">
-                                目标描述
-                            </td>
-                            <td>
-                                <span th:class="${job.enabled ? 'status-enabled' : 'status-disabled'}" 
-                                      th:text="${job.enabled ? '启用' : '停用'}">状态</span>
-                            </td>
-                            <td>
-                                <a class="btn btn-sm btn-primary" th:href="@{/batch/job/}+${job.jobId}" 
-                                   title="编辑此作业配置">
-                                    编辑
-                                </a>
-                            </td>
-                        </tr>
-                        <!-- 无数据时显示提示 -->
-                        <tr th:if="${jobList == null or jobList.isEmpty()}">
-                            <td colspan="8" class="empty-data">
-                                <div>
-                                    <p style="font-size: 18px; margin-bottom: 10px;">暂无作业配置数据</p>
-                                    <p style="color: #999;">请点击上方"追加新作业配置"按钮添加数据</p>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- 下半部分 -->
+        <div class="lower-section">
+            <!-- 明细表格区域 -->
+            <div class="table-section">
+                <h5 class="mb-3" style="color: #e65100; font-weight: bold;">作业配置明细</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm styled-table">
+                        <thead>
+                            <tr>
+                                <th width="10%">作业ID</th>
+                                <th width="12%">Bean名称</th>
+                                <th width="15%">作业描述</th>
+                                <th width="12%">Cron表达式</th>
+                                <th width="15%">Cron描述</th>
+                                <th width="15%">目标描述</th>
+                                <th width="8%">启用状态</th>
+                                <th width="13%">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 有数据时显示数据 -->
+                            <tr th:each="job:${jobList}" th:if="${jobList != null and !jobList.isEmpty()}">
+                                <td>
+                                    <strong th:text="${job.jobId}">作业ID</strong>
+                                </td>
+                                <td>
+                                    <code th:text="${job.beanName}">Bean名称</code>
+                                </td>
+                                <td th:text="${job.description}" title="${job.description}">
+                                    作业描述
+                                </td>
+                                <td>
+                                    <code th:text="${job.cronExpression}" title="${job.cronExpression}">Cron表达式</code>
+                                </td>
+                                <td th:text="${job.cronDescription}" title="${job.cronDescription}">
+                                    Cron描述
+                                </td>
+                                <td th:text="${job.targetDescription}" title="${job.targetDescription}">
+                                    目标描述
+                                </td>
+                                <td>
+                                    <span th:class="${job.enabled ? 'status-enabled' : 'status-disabled'}" 
+                                          th:text="${job.enabled ? '启用' : '停用'}">状态</span>
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm btn-primary" th:href="@{/batch/job/}+${job.jobId}" 
+                                       title="编辑此作业配置">
+                                        编辑
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- 无数据时显示提示 -->
+                            <tr th:if="${jobList == null or jobList.isEmpty()}">
+                                <td colspan="8" class="empty-data">
+                                    <div>
+                                        <p style="font-size: 18px; margin-bottom: 10px;">暂无作业配置数据</p>
+                                        <p style="color: #999;">请点击上方"追加新作业配置"按钮添加数据</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- 页面底部信息 -->
-        <div class="text-center text-muted mt-4">
+        <div class="text-center text-muted footer-info">
             <small>KNPiano 批处理管理系统 - 作业配置管理模块</small>
         </div>
     </div>

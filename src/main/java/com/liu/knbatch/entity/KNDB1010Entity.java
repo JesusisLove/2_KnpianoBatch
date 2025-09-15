@@ -9,8 +9,11 @@ package com.liu.knbatch.entity;
 public class KNDB1010Entity {
     
     private String stuId;           // 学生ID
+    private String stuName;
     private String subjectId;       // 科目ID
+    private String subjectName;
     private String subjectSubId;    // 科目子ID（级别）
+    private String subjectSubName;
     private String schedualDate;    // 排课日期
     private String lessonId;        // 课程ID
     // private String teacherId;       // 教师ID
@@ -36,8 +39,24 @@ public class KNDB1010Entity {
         this.stuId = stuId;
     }
     
+    public String getStuName() {
+        return stuName;
+    }
+
+    public void setStuName(String stuName) {
+        this.stuName = stuName;
+    }
+    
     public String getSubjectId() {
         return subjectId;
+    }
+    
+    public String getSubjectName() {
+        return subjectName;
+    }
+
+    public void setSubjectName(String subjectName) {
+        this.subjectName = subjectName;
     }
     
     public void setSubjectId(String subjectId) {
@@ -46,6 +65,14 @@ public class KNDB1010Entity {
     
     public String getSubjectSubId() {
         return subjectSubId;
+    }
+    
+    public String getSubjectSubName() {
+        return subjectSubName;
+    }
+
+    public void setSubjectSubName(String subjectSubName) {
+        this.subjectSubName = subjectSubName;
     }
     
     public void setSubjectSubId(String subjectSubId) {

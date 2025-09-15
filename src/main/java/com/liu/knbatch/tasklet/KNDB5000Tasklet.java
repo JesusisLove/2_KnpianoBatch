@@ -1,5 +1,7 @@
 package com.liu.knbatch.tasklet;
 
+import com.liu.knbatch.config.BatchMailInfo;
+import com.liu.knbatch.dao.BatchMailConfigDao;
 import com.liu.knbatch.dao.KNDB5000Dao;
 import com.liu.knbatch.entity.KNDB5000Entity;
 import com.liu.knbatch.service.SimpleEmailService;
@@ -43,9 +45,12 @@ public class KNDB5000Tasklet implements Tasklet {
     
     private static final Logger logger = LoggerFactory.getLogger(KNDB5000Tasklet.class);
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-    
+    private String jobId = "KNDB5000";
+
     @Autowired
     private KNDB5000Dao kndb5000Dao;
+    @Autowired
+    private BatchMailConfigDao mailDao;
 
     @Autowired(required = false)
     private SimpleEmailService emailService;
@@ -412,8 +417,25 @@ public class KNDB5000Tasklet implements Tasklet {
     private void sendEmailNotification(String jobName, String description, boolean success, String logContent, KNDB5000Entity backupInfo) {
         try {
             if (emailService != null) {
+
+                // 从数据库邮件管理表提取邮件管理信息
+                BatchMailInfo mailInfo = mailDao.selectMailInfo(jobId);
+                // 给程序维护者发送邮件
+                emailService.setFromEmail(mailInfo.getEmailFrom());
+                emailService.setToEmails(mailInfo.getMailToDevloper());
+                emailService.sendBatchNotification(jobName, description, success, logContent);
+
                 String content = buildEmailContent(success, logContent, backupInfo);
-                emailService.sendBatchNotification(jobName, description, success, content);
+                emailService.sendBatchNotification(jobName, description,success, content);
+
+                // 如果用户邮件不为空，则给用户发送邮件 Testing...
+                // if (!mailInfo.getEmailToUser().isEmpty()){
+                //     emailService.setFromEmail(mailInfo.getEmailFrom());
+                //     emailService.setToEmails(mailInfo.getEmailToUser());
+                //     content = buildEmailContent(success, mailInfo.getMailContentForUser(), backupInfo);
+                //     emailService.sendBatchNotification(jobName, description, success, content);
+                // }
+
                 logger.info("邮件通知发送完成 - jobName: {}, success: {}", jobName, success);
             } else {
                 logger.info("邮件服务未启用，跳过邮件发送 - jobName: {}", jobName);

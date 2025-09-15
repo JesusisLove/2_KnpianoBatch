@@ -1,5 +1,7 @@
 package com.liu.knbatch.tasklet;
 
+import com.liu.knbatch.config.BatchMailInfo;
+import com.liu.knbatch.dao.BatchMailConfigDao;
 import com.liu.knbatch.dao.KNDB2030Dao;
 import com.liu.knbatch.entity.KNDB2030Entity;
 import com.liu.knbatch.service.SimpleEmailService;
@@ -36,9 +38,12 @@ public class KNDB2030Tasklet implements Tasklet {
     private static final Logger logger = LoggerFactory.getLogger(KNDB2030Tasklet.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
-    
+    private String jobId = "KNDB2030";
+
     @Autowired
     private KNDB2030Dao kndb2030Dao;
+    @Autowired
+    private BatchMailConfigDao mailDao;
 
     @Autowired(required = false)
     private SimpleEmailService emailService;
@@ -205,9 +210,23 @@ public class KNDB2030Tasklet implements Tasklet {
      * 发送邮件通知
      */
     private void sendEmailNotification(String jobName, String description, boolean success, String logContent) {
+
+        // 从数据库邮件管理表提取邮件管理信息
+        BatchMailInfo mailInfo = mailDao.selectMailInfo(jobId);
+
         try {
             if (emailService != null) {
+                emailService.setFromEmail(mailInfo.getEmailFrom());
+                // 给程序维护者发送邮件
+                emailService.setToEmails(mailInfo.getMailToDevloper());
                 emailService.sendBatchNotification(jobName, description, success, logContent);
+
+                // 如果用户邮件不为空，则给用户发送邮件
+                if (!mailInfo.getEmailToUser().isEmpty()){
+                    emailService.setToEmails(mailInfo.getEmailToUser());
+                    emailService.sendBatchNotification(jobName, description, success, logContent);
+                }
+
                 logger.info("邮件通知发送完成 - jobName: {}, success: {}", jobName, success);
             } else {
                 logger.info("邮件服务未启用，跳过邮件发送 - jobName: {}", jobName);

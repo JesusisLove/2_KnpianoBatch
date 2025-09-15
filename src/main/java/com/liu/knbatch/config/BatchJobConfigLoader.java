@@ -13,7 +13,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
+/** 该类不要删除 （暂时保留）
+ * 2025-08-30 该类已经被数据库表t_batch_job_config所取代 
  * 批处理作业配置加载器
  * 负责从XML配置文件中读取批处理作业定义
  * 

@@ -2,6 +2,9 @@ package com.liu.knbatch.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.liu.knbatch.dao.BatchJobConfigDao;
+
 import javax.annotation.PostConstruct;
 import java.util.*;
 
@@ -17,7 +20,8 @@ import java.util.*;
 public class BatchJobRegistry {
     
     @Autowired
-    private BatchJobConfigLoader configLoader;
+    // private BatchJobConfigLoader configLoader; //使用BatchJobConfigDao来替代Batch作业在batch-jobs.xml里的配置
+    private BatchJobConfigDao configLoader;
     
     private Map<String, BatchJobInfo> jobRegistry = new HashMap<>();
     

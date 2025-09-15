@@ -92,21 +92,13 @@ public class KnpianoBatchApplication {
         System.out.println("");
         
 
- // 强制指定为Web应用
-    SpringApplication app = new SpringApplication(KnpianoBatchApplication.class);
-    app.setWebApplicationType(WebApplicationType.SERVLET);
-    ConfigurableApplicationContext context = app.run(args);
-    
-    // 启动完成后显示信息
-    displayWebServiceInfo(context);
-
-        // // 创建Web应用
-        // SpringApplication app = new SpringApplication(KnpianoBatchApplication.class);
-        // app.setWebApplicationType(WebApplicationType.SERVLET); // 明确指定为Web应用
-        // ConfigurableApplicationContext context = app.run(args);
+        // 强制指定为Web应用
+        SpringApplication app = new SpringApplication(KnpianoBatchApplication.class);
+        app.setWebApplicationType(WebApplicationType.SERVLET);
+        ConfigurableApplicationContext context = app.run(args);
         
-        // // 在Web容器启动后，初始化批处理服务信息显示
-        // context.getBean(KnpianoBatchApplication.class).initializeBatchServices(context);
+        // 启动完成后显示信息
+        displayWebServiceInfo(context);
     }
     
 

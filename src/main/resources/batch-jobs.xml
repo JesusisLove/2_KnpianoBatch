@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <batch-jobs>
     <!--
-    KnPiano批处理作业配置文件
+    KnPiano批处理作业配置文件 【batch-jobs.xml已废弃 不再使用 为了作为学习参考资料，不删除该文件】
     
     添加新的批处理作业时，只需要在这里添加一个 batch-job 节点即可
     Java代码无需修改！这样就实现了您要求的动态配置驱动。

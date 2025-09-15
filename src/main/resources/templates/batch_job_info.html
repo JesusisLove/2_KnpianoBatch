@@ -145,17 +145,26 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Bean名称</label>
+                            <label>作业名称</label>
                             <input name="beanName" type="text" class="form-control" 
-                                placeholder="Bean名称"
+                                placeholder="作业名称"
                                 th:value="${selectedJob != null ? selectedJob.beanName : ''}">
                         </div>
                         
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label>作业描述</label>
                             <input name="description" type="text" class="form-control" 
                                 placeholder="作业描述"
                                 th:value="${selectedJob != null ? selectedJob.description : ''}">
+                        </div> -->
+                        <div class="form-group">
+                            <label>作业描述</label>
+                            <textarea name="description" class="form-control" 
+                                    placeholder="请输入作业描述..."
+                                    rows="5"
+                                    cols="80"
+                                    style="min-height: 120px; resize: vertical;"
+                                    th:text="${selectedJob != null ? selectedJob.description : ''}"></textarea>
                         </div>
                         
                         <div class="form-group">
@@ -172,18 +181,27 @@
                                 th:value="${selectedJob != null ? selectedJob.cronDescription : ''}">
                         </div>
                         
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label>目标描述</label>
                             <input name="targetDescription" type="text" class="form-control" 
                                 placeholder="目标处理说明"
                                 th:value="${selectedJob != null ? selectedJob.targetDescription : ''}">
+                        </div> -->
+                        <div class="form-group">
+                            <label>目标描述</label>
+                            <textarea name="targetDescription" class="form-control" 
+                                    placeholder="请输入目标描述..."
+                                    rows="5"
+                                    cols="80"
+                                    style="min-height: 120px; resize: vertical;"
+                                    th:text="${selectedJob != null ? selectedJob.targetDescription : ''}"></textarea>
                         </div>
                         
                         <div class="form-group">
                             <label>是否启用</label>
                             <select name="enabled" class="form-control">
-                                <option value="true" th:selected="${selectedJob != null and selectedJob.enabled == true}">启用</option>
-                                <option value="false" th:selected="${selectedJob != null and selectedJob.enabled == false}">停用</option>
+                                <option value="true" th:selected="${selectedJob != null and selectedJob.enabled == 1}">启用</option>
+                                <option value="false" th:selected="${selectedJob != null and selectedJob.enabled == 0}">停用</option>
                             </select>
                         </div>
                         

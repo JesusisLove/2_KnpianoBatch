@@ -28,6 +28,10 @@ KnpianoBatch/                                   # 项目根目录
         │   │   ├── BatchJobInfo.java         # 🆕 批处理作业信息实体
         │   │   ├── BatchJobRegistry.java     # 🆕 批处理作业注册表
         │   │   └── BatchJobConfigLoader.java # 🆕 XML配置文件加载器
+        │   ├── controller/                        # Web
+        │   │   ├── BatchJobConfigController.java   
+        │   │   ├── LoginController.java            
+        │   │
         │   └── service/                       # 业务服务层（可选扩展）
         │       └── BatchExecutionService.java # 批处理执行服务（可选）
         └── resources/
@@ -36,11 +40,11 @@ KnpianoBatch/                                   # 项目根目录
             ├── application-prod.properties    # 生产环境配置
             ├── batch-jobs.xml                 # 🎯 核心动态配置文件
             ├── logback-spring.xml             # 日志配置（支持多环境）
-            └── mybatis/
+            ├── mybatis/
             │   ├── mybatis-config.xml         # MyBatis全局配置
             │   └── mapper/                    # SQL映射文件
             │        ├── KNDB1010Mapper.xml    # KNDB1010 SQL映射
             │        ├── KNDB1020Mapper.xml    # KNDB1020 SQL映射
             │        └── ...                   # 其他业务模块映射文件
             └── templates/
-                    ├── xxxxxx.html
+                    ├── xxxxxx.html            # Batch的Web页面
