@@ -59,7 +59,10 @@ public class SimpleEmailService {
             }
             
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
+            // message.setFrom(fromEmail);
+
+            // 这样设置，用户端看到的是【KNPiano批处理系统】，而不是邮箱地址【liuym7599@gmail.com】
+            message.setFrom("观妮的KNBatch系统-邮件自动发送 <" + fromEmail + ">");
             
             // 处理多个收件人 - 支持逗号分隔
             String[] recipients = toEmails.split(",");
