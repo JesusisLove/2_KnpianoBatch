@@ -36,10 +36,14 @@ public class BatchMailConfigController {
             if (mailInfo != null) {
                 searchResults.add(mailInfo);
             }
+            
+            model.addAttribute("mailList", searchResults);
+            model.addAttribute("searchJobId", jobId); // 保持检索条件
+        } else {
+            Collection<BatchMailInfo> collection = batchMailConfigDao.selectAllMailInfo();
+            model.addAttribute("mailList", collection);
         }
         
-        model.addAttribute("mailList", searchResults);
-        model.addAttribute("searchJobId", jobId); // 保持检索条件
         return "batch_mail_config_list";
     }
 

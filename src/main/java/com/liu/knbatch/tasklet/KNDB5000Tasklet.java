@@ -75,6 +75,9 @@ public class KNDB5000Tasklet implements Tasklet {
     // 备份保留天数
     @Value("${knbatch.backup.retention.days:30}")
     private int retentionDays;
+
+    @Value("${knbatch.deploy.enviroment}")
+    private String deployEnvironment;
     
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
@@ -229,13 +232,17 @@ public class KNDB5000Tasklet implements Tasklet {
         StringBuilder logContent = new StringBuilder(); // 如果方法外部没有logContent，需要创建
         
         // 记录配置信息
-        addLog(logContent, "生产环境备份路径配置: " + (productionBackupPath != null ? productionBackupPath : "未配置"));
+        // addLog(logContent, "生产环境备份路径配置: " + (productionBackupPath != null ? productionBackupPath : "未配置"));
+        addLog(logContent, deployEnvironment + "备份路径配置: " + (productionBackupPath != null ? productionBackupPath : "未配置"));
         addLog(logContent, "本地备份路径配置: " + localBackupPath);
         
         // 如果配置了生产环境路径，直接使用（不检查父目录是否存在）
         if (productionBackupPath != null && !productionBackupPath.trim().isEmpty()) {
-            addLog(logContent, "使用生产环境备份路径: " + productionBackupPath);
-            logger.info("使用生产环境备份路径: {}", productionBackupPath);
+            // addLog(logContent, "使用生产环境备份路径: " + productionBackupPath);
+            // logger.info("使用生产环境备份路径: {}", productionBackupPath);
+            addLog(logContent, String.format("使用%s备份路径: %s", deployEnvironment, productionBackupPath));
+            logger.info("使用{}备份路径: {}", deployEnvironment, productionBackupPath);
+
             return productionBackupPath;
         }
         

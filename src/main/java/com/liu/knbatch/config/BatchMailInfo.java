@@ -7,6 +7,8 @@ package com.liu.knbatch.config;
 public class BatchMailInfo {
     
     private String jobId;                    // 作业ID
+    private String description;
+    private String cronDescription;
     private String emailFrom;               // 发送方邮箱
     private String mailToDevloper;          // 开发者邮箱(多个邮箱用逗号分隔)
     private String emailToUser;             // 用户邮箱(多个邮箱用逗号分隔)
@@ -34,7 +36,22 @@ public class BatchMailInfo {
     public void setJobId(String jobId) {
         this.jobId = jobId;
     }
+    
+    public String getDescription() {
+        return description;
+    }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCronDescription() {
+        return cronDescription;
+    }
+
+    public void setCronDescription(String cronDescription) {
+        this.cronDescription = cronDescription;
+    }
     public String getEmailFrom() {
         return emailFrom;
     }

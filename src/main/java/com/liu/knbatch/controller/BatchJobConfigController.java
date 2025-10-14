@@ -40,10 +40,13 @@ public class BatchJobConfigController {
             if (jobInfo != null) {
                 searchResults.add(jobInfo);
             }
-        }
         
-        model.addAttribute("jobList", searchResults);
-        model.addAttribute("searchJobId", jobId); // 保持检索条件
+            model.addAttribute("jobList", searchResults);
+            model.addAttribute("searchJobId", jobId); // 保持检索条件
+        } else {
+            Collection<BatchJobInfo> collection = batchJobConfigDao.loadBatchJobs();
+            model.addAttribute("jobList", collection);
+        }
         return "batch_job_config_list";
     }
 

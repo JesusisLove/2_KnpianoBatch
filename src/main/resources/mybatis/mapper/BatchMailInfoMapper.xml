@@ -8,6 +8,8 @@
     <!-- 结果映射 -->
     <resultMap id="MailInfoMap" type="com.liu.knbatch.config.BatchMailInfo">
         <result property="jobId" column="job_id" />
+        <result property="description" column="description" />
+        <result property="cronDescription" column="cron_description" />
         <result property="emailFrom" column="email_from" />
         <result property="mailToDevloper" column="mail_to_devloper" />
         <result property="emailToUser" column="email_to_user" />
@@ -16,26 +18,49 @@
 
     <!-- 查询所有邮件配置信息 -->
     <select id="selectAllMailInfo" resultMap="MailInfoMap">
-        SELECT 
+        <!-- SELECT 
             job_id,
             email_from,
             mail_to_devloper,
             email_to_user,
             mail_content_for_user
         FROM t_batch_mail_config 
-        ORDER BY job_id
+        ORDER BY job_id -->
+        SELECT 
+            MAIL.job_id,
+            JOB.description,
+            JOB.cron_description,
+            MAIL.email_from,
+            MAIL.mail_to_devloper,
+            MAIL.email_to_user,
+            MAIL.mail_content_for_user
+        FROM t_batch_mail_config MAIL
+        INNER JOIN t_batch_job_config JOB
+        ON MAIL.job_id = JOB.job_id
+        ORDER BY job_id 
     </select>
 
     <!-- 根据作业ID查询邮件配置信息 -->
     <select id="selectMailInfo" parameterType="string" resultMap="MailInfoMap">
-        SELECT 
+        <!-- SELECT 
             job_id,
             email_from,
             mail_to_devloper,
             email_to_user,
             mail_content_for_user
-        FROM t_batch_mail_config 
-        WHERE job_id = #{jobId}
+        FROM t_batch_mail_config  -->
+        SELECT 
+            MAIL.job_id,
+            JOB.description,
+            JOB.cron_description,
+            MAIL.email_from,
+            MAIL.mail_to_devloper,
+            MAIL.email_to_user,
+            MAIL.mail_content_for_user
+        FROM t_batch_mail_config MAIL
+        INNER JOIN t_batch_job_config JOB
+        ON MAIL.job_id = JOB.job_id
+        WHERE MAIL.job_id = #{jobId}
     </select>
 
     <!-- 插入邮件配置信息 -->
