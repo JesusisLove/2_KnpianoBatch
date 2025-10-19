@@ -430,7 +430,6 @@ public class KNDB5000Tasklet implements Tasklet {
                 // 给程序维护者发送邮件
                 emailService.setFromEmail(mailInfo.getEmailFrom());
                 emailService.setToEmails(mailInfo.getMailToDevloper());
-                emailService.sendBatchNotification(jobName, description, success, logContent);
 
                 String content = buildEmailContent(success, logContent, backupInfo);
                 emailService.sendBatchNotification(jobName, description,success, content);
