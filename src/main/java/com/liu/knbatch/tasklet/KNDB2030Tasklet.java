@@ -142,26 +142,35 @@ public class KNDB2030Tasklet implements Tasklet {
             
             addLog(logContent, "步骤2: 完成 - 成功预支付再调整记录数: " + updatedCount);
             logger.info("步骤2: 完成 - 成功预支付再调整记录数: {}", updatedCount);
-            
+
             // 更新贡献统计
             contribution.incrementReadCount();
             contribution.incrementWriteCount(updatedCount);
-            
+
+            success = true;
+            logExecutionResult(batchName, "SUCCESS", incorrectCount, updatedCount, startTime, logContent);
+
+            // 只有当更新记录数大于0时才发送邮件通知（表示有错误数据需要调整）
+            if (updatedCount > 0) {
+                sendEmailNotification(batchName, description, success, logContent.toString());
+                logger.info("预支付再调整记录数 > 0，已发送邮件通知");
+            } else {
+                logger.info("预支付再调整记录数 = 0，无需发送邮件通知");
+            }
+
             return RepeatStatus.FINISHED;
-            
+
         } catch (Exception e) {
             addLog(logContent, "========== " + batchName + " 批处理执行异常 ==========");
             addLog(logContent, "错误信息: " + e.getMessage());
             logger.error("========== {} 批处理执行异常 ==========", batchName, e);
-            
+
             success = false;
             logExecutionResult(batchName, "ERROR", incorrectCount, updatedCount, startTime, logContent);
-            throw e;
-            
-        } finally {
-            success = true;
-            // 发送邮件通知
+
+            // 异常情况下也发送邮件通知
             sendEmailNotification(batchName, description, success, logContent.toString());
+            throw e;
         }
     }
     
