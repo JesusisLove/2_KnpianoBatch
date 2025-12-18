@@ -219,7 +219,7 @@ public class KNDB5000Tasklet implements Tasklet {
      * 从数据源URL中提取数据库名称
      */
     private String extractDatabaseName(String url) {
-        // jdbc:mysql://192.168.50.101:49168/KNStudent
+        // jdbc:mysql://192.168.50.101:*****/KNStudent
         String[] parts = url.split("/");
         String dbNameWithParams = parts[parts.length - 1];
         return dbNameWithParams.split("\\?")[0]; // 去掉参数部分
@@ -309,7 +309,7 @@ public class KNDB5000Tasklet implements Tasklet {
      * 从URL中提取主机地址
      */
     private String extractHostFromUrl(String url) {
-        // jdbc:mysql://192.168.50.101:49168/KNStudent
+        // jdbc:mysql://192.168.50.101:*****/KNStudent
         String hostPart = url.substring(url.indexOf("://") + 3);
         return hostPart.substring(0, hostPart.indexOf(":"));
     }
@@ -318,7 +318,7 @@ public class KNDB5000Tasklet implements Tasklet {
      * 从URL中提取端口号
      */
     private String extractPortFromUrl(String url) {
-        // jdbc:mysql://192.168.50.101:49168/KNStudent
+        // jdbc:mysql://192.168.50.101:*****/KNStudent
         String hostPart = url.substring(url.indexOf("://") + 3);
         String portPart = hostPart.substring(hostPart.indexOf(":") + 1);
         return portPart.substring(0, portPart.indexOf("/"));

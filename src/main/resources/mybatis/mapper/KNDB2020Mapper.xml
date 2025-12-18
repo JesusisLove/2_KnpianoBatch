@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.liu.knbatch.dao.KNDB2020Dao">
+
+    <!-- 月度汇总验证实体结果映射 -->
+    <resultMap id="MonthSummaryMap" type="com.liu.knbatch.entity.KNDB2020MonthSummaryEntity">
+        <result property="lsnMonth" column="lsn_month" />
+        <result property="shouldPayLsnFee" column="should_pay_lsn_fee" />
+        <result property="hasPaidLsnFee" column="has_paid_lsn_fee" />
+        <result property="unpaidLsnFee" column="unpaid_lsn_fee" />
+        <result property="totalPaidAndUnpaid" column="total_paid_and_unpaid" />
+        <result property="difference" column="difference" />
+        <result property="verification" column="verification" />
+    </resultMap>
+
+    <!-- 汇总验证结果实体结果映射 -->
+    <resultMap id="ValidationSummaryMap" type="com.liu.knbatch.entity.KNDB2020ValidationSummaryEntity">
+        <result property="totalMonthCount" column="total_month_count" />
+        <result property="correctMonthCount" column="correct_month_count" />
+        <result property="errorMonthCount" column="error_month_count" />
+        <result property="finalResult" column="final_result" />
+    </resultMap>
+
+    <!-- 费用表错误记录实体结果映射 -->
+    <resultMap id="FeeErrorMap" type="com.liu.knbatch.entity.KNDB2020FeeErrorEntity">
+        <result property="lessonId" column="lesson_id" />
+        <result property="feeCount" column="fee_count" />
+        <result property="feeIds" column="fee_ids" />
+    </resultMap>
+
+    <!-- 支付表错误记录实体结果映射 -->
+    <resultMap id="PayErrorMap" type="com.liu.knbatch.entity.KNDB2020PayErrorEntity">
+        <result property="lsnFeeId" column="lsn_fee_id" />
+        <result property="payCount" column="pay_count" />
+        <result property="payIds" column="pay_ids" />
+    </resultMap>
+
+    <!-- 1. 获取指定年度的所有月份汇总验证数据 -->
+    <select id="getMonthSummaryList" parameterType="string" resultMap="MonthSummaryMap">
+        SELECT
+            lsn_month,
+            should_pay_lsn_fee,
+            has_paid_lsn_fee,
+            unpaid_lsn_fee,
+            (has_paid_lsn_fee + unpaid_lsn_fee) AS total_paid_and_unpaid,
+            (should_pay_lsn_fee - (has_paid_lsn_fee + unpaid_lsn_fee)) AS difference,
+            CASE
+                WHEN ABS(should_pay_lsn_fee - (has_paid_lsn_fee + unpaid_lsn_fee)) <![CDATA[<]]> 0.01
+                THEN '✓'
+                ELSE '✗'
+            END as verification
+        FROM v_total_lsnfee_with_paid_unpaid_every_month
+        WHERE lsn_month LIKE CONCAT(#{year}, '-%')
+        ORDER BY lsn_month
+    </select>
+
+    <!-- 2. 获取指定年度的整体验证结果汇总 -->
+    <select id="getValidationSummary" parameterType="string" resultMap="ValidationSummaryMap">
+        SELECT
+            COUNT(*) as total_month_count,
+            SUM(CASE WHEN ABS(should_pay_lsn_fee - (has_paid_lsn_fee + unpaid_lsn_fee)) <![CDATA[<]]> 0.01 THEN 1 ELSE 0 END) as correct_month_count,
+            SUM(CASE WHEN ABS(should_pay_lsn_fee - (has_paid_lsn_fee + unpaid_lsn_fee)) <![CDATA[>=]]> 0.01 THEN 1 ELSE 0 END) as error_month_count,
+            CASE
+                WHEN SUM(CASE WHEN ABS(should_pay_lsn_fee - (has_paid_lsn_fee + unpaid_lsn_fee)) <![CDATA[>=]]> 0.01 THEN 1 ELSE 0 END) = 0
+                THEN '✓ 全部正确！'
+                ELSE '✗ 仍有错误月份'
+            END as final_result
+        FROM v_total_lsnfee_with_paid_unpaid_every_month
+        WHERE lsn_month LIKE CONCAT(#{year}, '-%')
+    </select>
+
+    <!-- 3-1. 检查费用表：一个lesson_id是否对应了多个lsn_fee_id（绝对不允许） -->
+    <select id="getFeeErrorList" resultMap="FeeErrorMap">
+        SELECT
+            lesson_id,
+            COUNT(DISTINCT lsn_fee_id) as fee_count,
+            GROUP_CONCAT(DISTINCT lsn_fee_id ORDER BY lsn_fee_id) as fee_ids
+        FROM t_info_lesson_fee
+        WHERE del_flg = 0
+        GROUP BY lesson_id
+        HAVING COUNT(DISTINCT lsn_fee_id) &gt; 1
+    </select>
+
+    <!-- 3-2. 检查支付表：一个lsn_fee_id是否对应了多个lsn_pay_id（绝对不允许） -->
+    <select id="getPayErrorList" resultMap="PayErrorMap">
+        <![CDATA[
+        SELECT
+            lsn_fee_id,
+            COUNT(*) as pay_count,
+            GROUP_CONCAT(lsn_pay_id ORDER BY lsn_pay_id) as pay_ids
+        FROM t_info_lesson_pay
+        WHERE del_flg = 0
+        GROUP BY lsn_fee_id
+        HAVING COUNT(*) > 1
+        ]]>
+    </select>
+
+</mapper>
