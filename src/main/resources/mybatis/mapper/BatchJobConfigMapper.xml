@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.liu.knbatch.dao.BatchJobConfigDao">
+
+    <!-- 结果映射 -->
+    <resultMap id="BatchJobInfoMap" type="com.liu.knbatch.config.BatchJobInfo">
+        <result property="jobId" column="job_id" />
+        <result property="beanName" column="bean_name" />
+        <result property="description" column="description" />
+        <result property="cronExpression" column="cron_expression" />
+        <result property="cronDescription" column="cron_description" />
+        <result property="targetDescription" column="target_description" />
+        <result property="enabled" column="batch_enabled" />
+    </resultMap>
+
+    <!-- 加载Job配置信息 -->
+    <select id="loadBatchJobs" resultMap="BatchJobInfoMap">
+        select * from t_batch_job_config;
+    </select>
+
+    <select id="findByJobId" resultType="com.liu.knbatch.config.BatchJobInfo">
+        select * from t_batch_job_config
+        where job_id = #{jobId}
+    </select>
+
+    <!-- 追加Job配置信息 -->
+    <insert id="insertJobInfo" parameterType="com.liu.knbatch.config.BatchJobInfo">
+        INSERT INTO t_batch_job_config (
+            job_id,
+            bean_name,
+            description,
+            cron_expression,
+            cron_description,
+            target_description,
+            batch_enabled
+        ) VALUES (
+            #{jobId},
+            #{beanName},
+            #{description},
+            #{cronExpression},
+            #{cronDescription},
+            #{targetDescription},
+            #{enabled}
+        )
+    </insert>
+
+    <!-- 修改Job配置信息 -->
+    <update id="updateJobInfo" parameterType="com.liu.knbatch.config.BatchJobInfo">
+        UPDATE t_batch_job_config 
+        <set>
+            <if test="beanName != null">
+                bean_name = #{beanName},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="cronExpression != null">
+                cron_expression = #{cronExpression},
+            </if>
+            <if test="cronDescription != null">
+                cron_description = #{cronDescription},
+            </if>
+            <if test="targetDescription != null">
+                target_description = #{targetDescription},
+            </if>
+            <if test="enabled != null">
+                batch_enabled = #{enabled}
+            </if>
+        </set>
+        WHERE job_id = #{jobId}
+    </update>
+
+</mapper>

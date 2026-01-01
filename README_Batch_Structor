@@ -1,0 +1,50 @@
+KnpianoBatch/                                   # 项目根目录
+├── pom.xml                                     # Maven配置文件
+├── README.md                                   # 项目说明文档
+├── .gitignore                                  # Git忽略文件配置
+├── logs/                                       # 应用日志目录（开发环境）
+│   ├── knpiano-batch.log                      # 主日志文件
+│   ├── knpiano-batch-error.log               # 错误日志文件
+│   └── knpiano-batch-batch.log               # 批处理专用日志
+└── src/
+    └── main/
+        ├── java/com/liu/knbatch/
+        │   ├── KnpianoBatchApplication.java   # 🔄 重构后的主应用类（纯动态版本）
+        │   ├── scheduler/                     # 📂 动态定时任务包
+        │   │   └── DynamicSchedulerManager.java # 🆕 动态定时任务管理器（替代所有硬编码定时任务）
+        │   ├── tasklet/                       # 业务处理任务包
+        │   │   ├── KNDB1010Tasklet.java      # 钢琴课程级别矫正任务
+        │   │   └── KNDB1020Tasklet.java      # 学生信息同步任务
+        │   ├── dao/                           # 数据访问层
+        │   │   ├── KNDB1010Dao.java          # KNDB1010数据访问接口
+        │   │   └── KNDB1020Dao.java          # KNDB1020数据访问接口
+        │   ├── entity/                        # 实体类包
+        │   │   └── KNDB1010Entity.java               # 课程实体类
+        │   ├── config/                        # 🔥 动态配置核心包
+        │   │   ├── BatchConfiguration.java   # 🔄 更新后的主配置（导入动态配置）
+        │   │   ├── KNDB1010Config.java       # KNDB1010专用批处理配置
+        │   │   ├── KNDB1020Config.java       # KNDB1020专用批处理配置
+        │   │   ├── SchedulerConfig.java      # 🆕 动态定时任务配置
+        │   │   ├── BatchJobInfo.java         # 🆕 批处理作业信息实体
+        │   │   ├── BatchJobRegistry.java     # 🆕 批处理作业注册表
+        │   │   └── BatchJobConfigLoader.java # 🆕 XML配置文件加载器
+        │   ├── controller/                        # Web
+        │   │   ├── BatchJobConfigController.java   
+        │   │   ├── LoginController.java            
+        │   │
+        │   └── service/                       # 业务服务层（可选扩展）
+        │       └── BatchExecutionService.java # 批处理执行服务（可选）
+        └── resources/
+            ├── application.properties         # 主配置文件
+            ├── application-dev.properties     # 开发环境配置
+            ├── application-prod.properties    # 生产环境配置
+            ├── batch-jobs.xml                 # 🎯 核心动态配置文件
+            ├── logback-spring.xml             # 日志配置（支持多环境）
+            ├── mybatis/
+            │   ├── mybatis-config.xml         # MyBatis全局配置
+            │   └── mapper/                    # SQL映射文件
+            │        ├── KNDB1010Mapper.xml    # KNDB1010 SQL映射
+            │        ├── KNDB1020Mapper.xml    # KNDB1020 SQL映射
+            │        └── ...                   # 其他业务模块映射文件
+            └── templates/
+                    ├── xxxxxx.html            # Batch的Web页面

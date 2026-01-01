@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<batch-jobs>
+    <!--
+    KnPiano批处理作业配置文件 【batch-jobs.xml已废弃 不再使用 为了作为学习参考资料，不删除该文件】
+    
+    添加新的批处理作业时，只需要在这里添加一个 batch-job 节点即可
+    Java代码无需修改！这样就实现了您要求的动态配置驱动。
+    
+    属性说明:
+    - id: 作业ID，用于命令行参数和内部识别 (如: KNDB1010)
+    - bean-name: Spring容器中的Bean名称 (如: kndb1010Job)
+    - description: 作业描述，便于理解和运维
+    - cron-expression: 定时表达式（可选），用于自动执行模式
+    - cron-description: 定时表达式的可读描述（可选）
+    - target-description: 处理目标描述（可选）
+    - enabled: 是否开启batch处理，默认为true：开启， false：关闭
+    -->
+
+    <!-- 现有的批处理作业 -->
+        <!-- <batch-job id="KNDB1010" bean-name="kndb1010Job" description="钢琴课程级别矫正" cron-expression="0 */5 * * * ?"
+        cron-description="每月1号凌晨1:00" target-description="钢琴课程级别矫正处理" enabled="true" /> -->
+
+    <!-- KNDB1010: 钢琴课程级别矫正 -->
+    <batch-job id="KNDB1010" 
+               bean-name="kndb1010Job" 
+               description="钢琴课程级别矫正" 
+               cron-expression="0 0 0 1 * ?"
+               cron-description="每月1号 凌晨0:00" 
+               target-description="钢琴课程级别矫正处理"
+               enabled="true" />
+
+    <!-- KNDB2030: 课费预支付再调整 -->
+    <batch-job id="KNDB2030" 
+               bean-name="kndb2030Job" 
+               description="预支付课费再调整" 
+               cron-expression="0 0 23 ? * SUN"
+               cron-description="每周日 晚上11:00" 
+               target-description="预支付课费再调整处理"
+               enabled="true" />
+
+    <!-- KNDB4010: 年度周次表生成 -->
+    <batch-job id="KNDB4000" 
+               bean-name="kndb4000Job" 
+               description="年度周次表生成" 
+               cron-expression="0 0 0 1 1 ?"
+               cron-description="每年1月1日 00:00" 
+               target-description="年度周次表生成处理" 
+               enabled="true" />
+
+    <!-- KNDB4010: 每周自动排课 -->
+    <batch-job id="KNDB4010" 
+               bean-name="kndb4010Job"
+               description="自动排下周课程"
+               cron-expression="0 0 20 ? * SUN"
+               cron-description="每周日 20:00"
+               target-description="自动排下周课程处理"
+               enabled="true" />
+
+    <!-- KNDB5000: 数据库备份 -->
+    <batch-job id="KNDB5000" 
+               bean-name="kndb5000Job" 
+               description="数据库定期备份" 
+               cron-expression="0 0 1 * * ?"
+               cron-description="每天凌晨1:00" 
+               target-description="数据库定期备份处理"
+               enabled="true" />
+               
+    <!-- KNDB1020: 学生信息同步 -->
+    <!-- <batch-job id="KNDB1020" 
+               bean-name="kndb1020Job" 
+               description="学生信息同步" 
+               cron-expression="0 0 2 ? * SUN"
+               cron-description="每周日 凌晨2:00" 
+               target-description="学生信息同步处理" 
+               enabled="false" /> -->
+
+    <!-- 未来新增的批处理作业 -->
+    <!-- 只需要添加配置，代码零修改！ -->
+
+    <!--
+    添加新作业的步骤:
+    
+    1. 编写具体的Job实现类
+        例如：com.liu.knbatch.tasklet.KNDB1060Tasklet.java
+        　和：com.liu.knbatch.config.KNDB1060Config.java
+    
+    2. 在这里添加一个 batch-job 节点配置
+       例如:
+       <batch-job 
+           id="KNDB1060" 
+           bean-name="kndb1060Job" 
+           description="您的业务描述"
+           cron-expression="0 0 6 ? * TUE"
+           cron-description="每周二凌晨6:00"
+           target-description="您的处理目标描述"
+           enabled="true" />
+    
+    3. 完成！无需修改 KnpianoBatchApplication.java 或任何其他Java代码
+    
+    4. 可以立即执行：
+       手动执行: java -jar knpiano-batch.jar (使用参数) job.name=KNDB1060_MANUAL (使用参数) base.date=20250130
+       自动执行: java -jar knpiano-batch.jar
+    
+    Cron表达式参考:
+    
+    格式: 秒 分 时 日 月 周
+    
+    0 0 1 1 * ?     每月1号凌晨1点执行
+    0 0 2 ? * SUN   每周日凌晨2点执行
+    0 0 3 ? * MON   每周一凌晨3点执行
+    0 0 4 L * ?     每月最后一天凌晨4点执行
+    0 0 5 1 * ?     每月1号凌晨5点执行
+    0 0 0 ? * MON-FRI 工作日午夜执行
+    0 30 9 * * ?    每天上午9:30执行
+    -->
+
+</batch-jobs>

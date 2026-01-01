@@ -1,0 +1,85 @@
+# macOS系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Maven构建文件
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Java编译文件
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+
+# 日志文件和日志目录
+logs/
+logs/*
+logs/**/*
+*.log
+*.log.*
+
+# 临时文件
+*.tmp
+*.temp
+*.pid
+*.seed
+*.pid.lock
+
+# Spring Boot
+spring-boot-*.jar
+BOOT-INF/
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 配置文件（如果包含敏感信息）
+# application-prod.properties
+# application-secret.properties
+
+# 其他
+.metadata
+.recommenders
+.settings/
+.project
+.classpath
+.factorypath
+
+# 忽略工具文件
+setup-env-prod.sh
+setup-env-test_or_dev.sh
+
+# 环境变量文件（包含敏感信息，禁止提交）
+.env
+.env.local
+.env.prod
+.env.dev
+.env.test
+.env.*.local
+
+# AI辅助开发配置文件
+CLAUDE.md

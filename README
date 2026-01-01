@@ -22,7 +22,7 @@ KNPiano批处理系统用于矫正钢琴课程的错误级别信息。系统支�
 src/
 ├── main/
 │   ├── java/
-│   │   └── com/liu/knpiano/batch/
+│   │   └── com/liu/knbatch/
 │   │       ├── KnpianoBatchApplication.java      # 主启动类
 │   │       ├── config/
 │   │       │   ├── BatchConfiguration.java       # 批处理配置
@@ -30,7 +30,7 @@ src/
 │   │       ├── dao/
 │   │       │   └── KNDB1010Dao.java              # 数据访问接口
 │   │       ├── entity/
-│   │       │   └── Lesson.java                   # 课程实体类
+│   │       │   └── KNDB1010Entity.java                   # 课程实体类
 │   │       └── tasklet/
 │   │           └── KNDB1010Tasklet.java          # 业务处理任务
 │   └── resources/
@@ -139,7 +139,7 @@ java -jar target/knpiano-batch-1.0.0.jar --job.name=KNDB1010_AUTO
             "type": "java",
             "name": "KNDB1010 Manual",
             "request": "launch",
-            "mainClass": "com.liu.knpiano.batch.KnpianoBatchApplication",
+            "mainClass": "com.liu.knbatch.KnpianoBatchApplication",
             "projectName": "knpiano-batch",
             "args": ["--job.name=KNDB1010_MANUAL", "--base.date=20250831"]
         },
@@ -147,7 +147,7 @@ java -jar target/knpiano-batch-1.0.0.jar --job.name=KNDB1010_AUTO
             "type": "java",
             "name": "KNDB1010 Auto",
             "request": "launch",
-            "mainClass": "com.liu.knpiano.batch.KnpianoBatchApplication",
+            "mainClass": "com.liu.knbatch.KnpianoBatchApplication",
             "projectName": "knpiano-batch",
             "args": ["--job.name=KNDB1010_AUTO"]
         }

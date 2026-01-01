@@ -1,0 +1,136 @@
+# KnPiano Batch 系统使用说明
+
+## 系统概述
+KnPiano Batch 是一个钢琴课程级别矫正的批处理管理系统，支持手动执行和定时自动执行两种模式。
+
+## 运行模式
+
+### 1. 服务模式（推荐生产环境）
+```bash
+# 启动服务，系统将持续运行并等待定时任务
+java -jar knpiano-batch.jar
+
+# 或者指定配置文件
+java -jar knpiano-batch.jar --spring.config.location=classpath:/application.properties
+```
+
+**特点：**
+- 系统持续运行，不会退出
+- 自动在每月1号凌晨1:00执行KNDB1010批处理
+- 适合部署在服务器上长期运行
+
+### 2. 手动执行模式（用于测试和特殊情况）
+
+#### 手动指定日期执行
+```bash
+java -jar knpiano-batch.jar --job.name=KNDB1010_MANUAL --base.date=20250131
+```
+
+#### 自动使用当前日期执行
+```bash
+java -jar knpiano-batch.jar --job.name=KNDB1010_AUTO
+```
+
+#### 启动batch待机，等待任务自动执行
+```bash
+java -jar knpiano-batch.jar
+```
+
+**特点：**
+- 执行完成后立即退出
+- 适合临时执行和测试
+
+## 定时任务说明
+
+### 执行时间
+- **Cron表达式：** `0 0 1 1 * ?`
+- **执行时间：** 每月1号凌晨1:00
+- **业务含义：** 在每月开始时执行，处理当月的钢琴课程级别矫正
+
+### 执行示例
+- 2月1日凌晨1:00执行 → 处理2月份的课程数据
+- 3月1日凌晨1:00执行 → 处理3月份的课程数据  
+- 8月1日凌晨1:00执行 → 处理8月份的课程数据
+
+## 日志说明
+
+### 日志文件位置
+```
+logs/
+├── knpiano-batch.log          # 主日志文件
+├── knpiano-batch-error.log    # 错误日志
+└── knpiano-batch-batch.log    # 批处理专用日志
+```
+
+### 关键日志标识
+- `=== [月份] 月1号凌晨1:00 KNDB1010 批处理开始执行 ===`
+- `=== [月份] 月1号 KNDB1010 批处理执行成功 ===`
+- `=== KNDB1010 定时批处理执行异常 ===`
+
+## 部署建议
+
+### 生产环境
+1. 使用服务模式启动
+2. 配置为系统服务（systemd/init.d）
+3. 设置日志轮转
+4. 监控日志文件
+
+### 测试环境
+1. 可以使用手动模式测试
+2. 也可以启动服务模式验证定时任务
+
+## 故障排查
+
+### 常见问题
+1. **定时任务没有执行**
+   - 检查应用是否以服务模式运行
+   - 查看日志中是否有调度相关的ERROR信息
+
+2. **批处理执行失败**
+   - 查看 `knpiano-batch-error.log`
+   - 检查数据库连接是否正常
+   - 确认目标月份的数据是否存在
+
+3. **应用启动后立即退出**
+   - 确认没有使用手动执行参数启动
+   - 检查是否设置了 `spring.main.keep-alive=true`
+
+### 日志级别调整
+```properties
+# 调试模式
+logging.level.com.liu.knbatch=DEBUG
+logging.level.org.springframework.scheduling=DEBUG
+
+# 生产模式
+logging.level.com.liu.knbatch=INFO
+logging.level.org.springframework.scheduling=INFO
+```
+
+## 系统监控
+
+建议监控以下指标：
+1. 应用进程是否正常运行
+2. 每月定时任务是否正常执行
+3. 批处理执行成功率
+4. 数据库连接状态
+5. 日志文件大小和轮转状态
+
+# 补充 在开发阶段不打jar包的情况下，可以直接使用Maven命令来执行Spring Boot应用
+在开发阶段不打jar包的情况下，可以直接使用Maven命令来执行Spring Boot应用。基于你提供的jar包执行方式，对应的Maven命令应该是：
+0. 先运行下面的sh脚本加载变量
+source ./dev-env-setup.sh
+1. 手动执行批处理任务
+bash# 对应 java -jar knpiano-batch.jar --job.name=KNDB1010_MANUAL --base.date=20250131
+mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1010_MANUAL --base.date=20250131"
+2. 自动执行批处理任务
+bash# 对应 java -jar knpiano-batch.jar --job.name=KNDB1020_AUTO
+mvn spring-boot:run -Dspring-boot.run.arguments="--job.name=KNDB1020_AUTO"
+3. 服务模式
+bash# 对应 java -jar knpiano-batch.jar (服务模式)
+mvn spring-boot:run
+
+注意事项
+
+工作目录：确保在项目根目录（包含pom.xml的目录）下执行命令
+Maven配置：确保pom.xml中有spring-boot-maven-plugin插件配置
+环境变量：如果有特定的环境变量需求，可能还需要额外配置

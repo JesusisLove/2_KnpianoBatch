@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.liu.knbatch.dao.KNDB1020Dao">
+
+    <!-- 获取需要同步的学生信息记录数 -->
+    <select id="selectPendingSyncStudentCount" resultType="int">
+        SELECT COUNT(*)
+        FROM t_student_info stu
+        WHERE stu.sync_status = 'PENDING'
+        AND stu.is_active = 'Y'
+    </select>
+
+    <!-- 执行学生信息同步操作 -->
+    <update id="syncStudentInformation">
+        UPDATE t_student_info 
+        SET sync_status = 'COMPLETED',
+            sync_time = NOW(),
+            update_time = NOW()
+        WHERE sync_status = 'PENDING'
+        AND is_active = 'Y'
+    </update>
+
+    <!-- 根据条件获取需要同步的学生信息记录数 -->
+    <select id="selectPendingSyncStudentCountByDate" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM t_student_info stu
+        WHERE stu.sync_status = 'PENDING'
+        AND stu.is_active = 'Y'
+        AND DATE(stu.update_time) = #{syncDate}
+    </select>
+
+    <!-- 根据日期范围执行学生信息同步 -->
+    <update id="syncStudentInformationByDateRange">
+        UPDATE t_student_info 
+        SET sync_status = 'COMPLETED',
+            sync_time = NOW(),
+            update_time = NOW()
+        WHERE sync_status = 'PENDING'
+        AND is_active = 'Y'
+        AND DATE(update_time) BETWEEN #{startDate} AND #{endDate}
+    </update>
+
+</mapper>

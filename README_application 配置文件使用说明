@@ -1,0 +1,234 @@
+# KnPiano Batch 配置文件使用说明 (简化版)
+
+## 📁 简化后的配置文件结构
+## 服务模式，也叫Batch自动执行模式
+
+```
+src/main/resources/
+├── application.properties          # 主配置文件（通用配置）
+├── application-dev.properties      # 开发环境配置
+└── application-prod.properties     # 生产环境配置
+```
+
+## 🎯 环境配置说明
+
+### 1. **application.properties** - 主配置文件
+- **用途**: 包含所有环境通用的配置
+- **内容**: 应用名称、MyBatis配置、通用数据库配置、定时任务配置等
+- **特点**: 被所有环境继承的基础配置
+
+### 2. **application-dev.properties** - 开发环境
+- **用途**: 本地开发 + 手动批处理测试
+- **适用场景**: 
+  - 本地IDE开发和调试
+  - 手动执行批处理作业进行测试
+  - 功能验证和问题排查
+- **特点**: 
+  - 详细的DEBUG日志，便于调试
+  - 使用开发数据库
+  - 相对路径的日志文件 (`logs/`)
+  - 适中的数据库连接池配置
+
+### 3. **application-prod.properties** - 生产环境
+- **用途**: 生产环境部署 + 定时任务执行
+- **适用场景**: 
+  - 生产服务器部署
+  - 定时任务自动执行
+  - 正式业务处理
+- **特点**: 
+  - 精简的INFO级别日志，提高性能
+  - 使用环境变量配置敏感信息
+  - 绝对路径的日志文件 (`/var/log/knpiano-batch/`)
+  - 大容量数据库连接池
+  - 生产级别的超时和重试配置
+
+## 🚀 使用方法
+
+### 当前的自动模式（推荐）
+您的 `KnpianoBatchApplication.java` 会自动选择合适的环境：
+
+### 1. 手动执行批处理 (使用 dev 环境)
+
+#### AUTO模式 - 自动使用当前日期
+```bash
+# KNDB1010 钢琴课程级别矫正 (使用今天的日期)
+java -jar knpiano-batch.jar --job.name=KNDB1010_AUTO
+
+# KNDB1020 学生信息同步 (使用今天的日期)
+java -jar knpiano-batch.jar --job.name=KNDB1020_AUTO
+```
+
+**使用场景**:
+- ✅ 日常功能测试
+- ✅ 处理当天对应的数据
+- ✅ 开发调试验证
+
+#### MANUAL模式 - 手动指定处理日期
+```bash
+# KNDB1010 处理指定日期的数据 (必须提供 --base.date 参数)
+java -jar knpiano-batch.jar --job.name=KNDB1010_MANUAL --base.date=20250601
+
+# KNDB1020 处理指定日期的数据
+java -jar knpiano-batch.jar --job.name=KNDB1020_MANUAL --base.date=20250715
+```
+
+**使用场景**:
+- ✅ 历史数据处理
+- ✅ 数据补偿 (之前失败的批处理重新执行)
+- ✅ 特定日期的业务逻辑测试
+- ✅ 月初/月末特殊场景测试
+
+### 2. 服务模式运行 (使用 prod 环境)
+```bash
+# 持续运行，等待定时任务自动执行
+java -jar knpiano-batch.jar
+```
+
+## 📋 AUTO vs MANUAL 模式详细说明
+
+### AUTO模式 (自动日期)
+- **日期来源**: 使用系统当前日期 `LocalDate.now()`
+- **适用场景**: 日常测试、当天数据处理
+- **命令格式**: `--job.name=XXXX_AUTO`
+- **无需额外参数**: 程序自动获取当前日期
+
+### MANUAL模式 (手动指定日期)
+- **日期来源**: 用户通过 `--base.date` 参数指定
+- **适用场景**: 历史数据处理、补偿处理、特定日期测试
+- **命令格式**: `--job.name=XXXX_MANUAL --base.date=yyyyMMdd`
+- **必须提供日期参数**: 否则会抛出异常
+
+### 实际业务场景举例
+
+#### 场景1: 日常测试 (使用AUTO)
+```bash
+# 测试今天的钢琴课程级别矫正
+java -jar knpiano-batch.jar --job.name=KNDB1010_AUTO
+# 如果今天是2025-07-29，程序会处理2025-07月份的数据
+```
+
+#### 场景2: 历史数据处理 (使用MANUAL)
+```bash
+# 处理6月份的钢琴课程级别矫正（可能之前漏处理了）
+java -jar knpiano-batch.jar --job.name=KNDB1010_MANUAL --base.date=20250601
+# 程序会处理2025-06月份的数据
+```
+
+#### 场景3: 数据补偿处理 (使用MANUAL)
+```bash
+# 假设7月15日的批处理失败了，需要重新处理
+java -jar knpiano-batch.jar --job.name=KNDB1010_MANUAL --base.date=20250715
+# 程序会重新处理2025-07月份的数据
+```
+
+#### 场景4: 测试特定月份 (使用MANUAL)
+```bash
+# 测试8月份的数据处理逻辑
+java -jar knpiano-batch.jar --job.name=KNDB1010_MANUAL --base.date=20250801
+# 程序会处理2025-08月份的数据
+```
+
+### 代码中的自动选择逻辑
+```java
+// 手动执行模式 → 开发环境
+System.setProperty("spring.profiles.active", "dev");
+
+// 服务模式 → 生产环境
+System.setProperty("spring.profiles.active", "prod");
+```
+
+### 手动指定环境（可选）
+如果需要，也可以手动指定环境：
+
+```bash
+# 强制使用开发环境
+java -jar knpiano-batch.jar -Dspring.profiles.active=dev
+
+# 强制使用生产环境
+java -jar knpiano-batch.jar -Dspring.profiles.active=prod
+```
+
+## 📊 环境对比表
+
+| 配置项 | dev (开发环境) | prod (生产环境) |
+|--------|---------------|----------------|
+| **用途** | 本地开发 + 手动测试 | 生产部署 + 定时任务 |
+| **数据库** | 开发数据库 | 生产数据库 |
+| **日志级别** | DEBUG (详细) | INFO (精简) |
+| **日志路径** | `logs/` (相对路径) | `/var/log/knpiano-batch/` (绝对路径) |
+| **连接池大小** | 15 | 30 |
+| **超时时间** | 30分钟 | 2小时 |
+| **重试次数** | 3次 | 5次 |
+| **调试模式** | 启用 | 禁用 |
+
+## 📊 作业模式对比表
+
+| 模式 | 命令示例 | 日期来源 | 使用场景 |
+|------|----------|----------|----------|
+| **AUTO** | `--job.name=KNDB1010_AUTO` | 系统当前日期 | 日常测试、当天处理 |
+| **MANUAL** | `--job.name=KNDB1010_MANUAL --base.date=20250601` | 用户指定日期 | 历史处理、补偿、特定测试 |
+
+## 🔧 生产环境部署配置
+
+### 1. 环境变量配置
+```bash
+# 设置生产环境数据库配置
+export DB_USERNAME=knpiano_prod_user
+export DB_PASSWORD=your_secure_production_password
+export DB_URL=jdbc:mysql://prod-db-server:3306/KNStudent_PROD
+```
+
+### 2. 创建日志目录
+```bash
+# 创建生产环境日志目录
+sudo mkdir -p /var/log/knpiano-batch
+sudo chown knpiano:knpiano /var/log/knpiano-batch
+sudo chmod 755 /var/log/knpiano-batch
+```
+
+### 3. 生产环境启动脚本
+```bash
+#!/bin/bash
+# 生产环境启动脚本: start-knpiano-batch.sh
+
+# 设置环境变量
+export DB_USERNAME=knpiano_prod_user
+export DB_PASSWORD=your_secure_production_password
+export DB_URL=jdbc:mysql://prod-db-server:3306/KNStudent_PROD
+
+# 启动应用（服务模式，自动使用prod环境）
+nohup java -jar /opt/knpiano-batch/knpiano-batch.jar \
+    > /var/log/knpiano-batch/startup.log 2>&1 &
+
+echo "KnPiano Batch 生产服务已启动"
+echo "PID: $!"
+echo "查看日志: tail -f /var/log/knpiano-batch/knpiano-batch.log"
+```
+
+## 📝 配置文件维护说明
+
+### 配置修改指南
+1. **通用配置修改** → 编辑 `application.properties`
+2. **开发环境调试** → 编辑 `application-dev.properties`
+3. **生产环境优化** → 编辑 `application-prod.properties`
+
+### 新增业务模块配置
+当添加新的业务模块（如KNDB1030）时，通常只需要：
+1. 在 `application.properties` 中添加通用配置
+2. 在具体环境文件中添加环境特定的配置（如果需要）
+
+## ⚠️ 注意事项
+
+1. **敏感信息安全**: 生产环境的数据库密码等使用环境变量，不要写在配置文件中
+2. **日志目录权限**: 确保生产环境的日志目录存在且应用有写入权限
+3. **数据库隔离**: 开发和生产使用不同的数据库，避免数据混乱
+4. **配置备份**: 生产环境配置文件要做好备份和版本控制
+
+## 🎯 最佳实践
+
+1. **开发阶段**: 使用 `dev` 环境进行开发和手动测试
+2. **部署前验证**: 在类生产环境中使用 `prod` 配置进行最终验证
+3. **生产部署**: 使用环境变量配置敏感信息，启用 `prod` 环境
+4. **监控运维**: 定期检查生产环境日志和系统状态
+
+通过这种简化的配置方案，您可以更加专注于业务逻辑开发，而不用为复杂的环境配置而困扰！

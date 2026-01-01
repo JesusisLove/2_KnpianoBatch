@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.liu.knbatch.dao.KNDB4010Dao">
+
+    <!-- 结果映射 -->
+    <resultMap id="KNDB4010EntityMap" type="com.liu.knbatch.entity.KNDB4010Entity">
+        <result property="weekNumber" column="week_number" />
+        <result property="startWeekDate" column="start_week_date" />
+        <result property="endWeekDate" column="end_week_date" />
+        <result property="fixedStatus" column="fixed_status" />
+    </resultMap>
+    <!-- 
+    -->
+    <select id="getFixedStatusInfo" parameterType="string" resultMap="KNDB4010EntityMap">
+        SELECT sts.*
+        FROM t_fixedlesson_status sts
+        WHERE sts.week_number = WEEKOFYEAR(#{baseDate})
+        AND #{baseDate} BETWEEN sts.start_week_date AND sts.end_week_date
+    </select>
+
+    <!-- 执行一周计划排课的Batch处理 -->
+    <select id="doLsnWeeklySchedual" statementType="CALLABLE">
+        {call sp_execute_weekly_batch_lsn_schedule (
+        #{weekStart, mode=IN, jdbcType=VARCHAR},
+        #{weekEnd, mode=IN, jdbcType=VARCHAR},
+        #{SEQCode, mode=IN, jdbcType=VARCHAR}
+        )}
+    </select>
+
+    <update id="updateWeeklyBatchStatus">
+        UPDATE t_fixedlesson_status
+        <!-- SET fixed_status= #{lsnStatus} -->
+        SET fixed_status= 1
+        WHERE start_week_date=#{weekStart}
+        AND end_week_date=#{weekEnd}
+        LIMIT 1
+    </update>
+
+</mapper>

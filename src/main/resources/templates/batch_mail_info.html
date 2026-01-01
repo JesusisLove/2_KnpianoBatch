@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>批处理邮件配置编辑</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container-fluid {
+            padding: 20px;
+        }
+
+        /* 页面标题样式 */
+        .page-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 35px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            text-align: center;
+        }
+
+        .page-title h2 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 28px;
+        }
+
+        /* 导航按钮 */
+        .nav-buttons {
+            margin: 20px 0;
+        }
+
+        .nav-buttons .btn {
+            margin-right: 10px;
+        }
+
+        /* 表单区域样式 */
+        .form-section {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 6px 20px rgba(255, 183, 77, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #ffb74d;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #ff9800;
+            box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.25);
+            background: white;
+        }
+
+        .form-control[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* 按钮样式 */
+        .btn-primary {
+            background: linear-gradient(45deg, #2196f3, #1976d2);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        /* 错误消息样式 */
+        .alert-danger {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border: 2px solid #f44336;
+            border-radius: 12px;
+            color: #c62828;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+
+        /* 提示文本样式 */
+        .help-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        /* 必填标记 */
+        .required {
+            color: #dc3545;
+        }
+
+        /* 字段说明样式 */
+        .field-info {
+            background: #e8f4fd;
+            border-left: 4px solid #2196f3;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <!-- 页面标题 -->
+        <div class="page-title">
+            <h2 th:text="${selectedMail != null ? '批处理邮件配置编辑' : '批处理邮件配置追加'}"></h2>
+        </div>
+
+        <!-- 导航按钮 -->
+        <div class="nav-buttons">
+            <a href="/batch/mail" class="btn btn-secondary">返回邮件配置列表</a>
+            <a href="/batch/job" class="btn btn-info">作业配置管理</a>
+            <a href="/main.html" class="btn btn-outline-secondary">返回主菜单</a>
+        </div>
+
+        <!-- 显示错误消息 -->
+        <div th:if="${errorMessageList}" class="alert alert-danger" role="alert">
+            <strong>输入错误：</strong>
+            <div th:each="errorMessage : ${errorMessageList}">
+                <p th:text="${errorMessage}"></p>
+            </div>
+        </div>
+
+        <!-- 字段说明 -->
+        <div class="field-info">
+            <h6 class="mb-2">填写说明：</h6>
+            <ul class="mb-0">
+                <li>作业ID：对应批处理作业的唯一标识</li>
+                <li>发送方邮箱：系统发送邮件时使用的邮箱地址</li>
+                <li>开发者邮箱：接收系统通知和错误报告的邮箱，多个邮箱用逗号分隔</li>
+                <li>用户邮箱：接收业务通知的邮箱，多个邮箱用逗号分隔</li>
+                <li>邮件内容：发送给用户的邮件模板内容</li>
+            </ul>
+        </div>
+
+        <!-- 表单区域 -->
+        <div class="form-section">
+            <form th:action="@{/batch/mail}" method="post">
+                <input type="hidden" name="_method" value="put" th:if="${selectedMail != null}" />
+                
+                <div class="form-group">
+                    <label>作业ID <span class="required">*</span></label>
+                    <input name="jobId" type="text" class="form-control" 
+                        placeholder="请输入作业ID，例如：KNDB1010" 
+                        th:value="${selectedMail != null ? selectedMail.jobId : ''}"
+                        th:readonly="${selectedMail != null}">
+                    <div class="help-text">作业ID必须与批处理作业配置中的ID一致</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>发送方邮箱 <span class="required">*</span></label>
+                    <input name="emailFrom" type="email" class="form-control" 
+                        placeholder="example@gmail.com"
+                        th:value="${selectedMail != null ? selectedMail.emailFrom : ''}">
+                    <div class="help-text">系统发送邮件时使用的发送方邮箱地址</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>开发者邮箱</label>
+                    <textarea name="mailToDevloper" class="form-control" rows="3"
+                        placeholder="多个邮箱请用逗号分隔，例如：dev1@gmail.com,dev2@gmail.com"
+                        th:text="${selectedMail != null ? selectedMail.mailToDevloper : ''}"></textarea>
+                    <div class="help-text">接收开发者通知的邮箱地址，用于系统错误报告和运行状态通知</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>用户邮箱</label>
+                    <textarea name="emailToUser" class="form-control" rows="3"
+                        placeholder="多个邮箱请用逗号分隔，例如：user1@gmail.com,user2@gmail.com"
+                        th:text="${selectedMail != null ? selectedMail.emailToUser : ''}"></textarea>
+                    <div class="help-text">接收用户通知的邮箱地址，用于业务相关的邮件通知</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>用户邮件内容</label>
+                    <textarea name="mailContentForUser" class="form-control" rows="6"
+                        placeholder="请输入发送给用户的邮件内容模板，可以包含占位符"
+                        th:text="${selectedMail != null ? selectedMail.mailContentForUser : ''}"></textarea>
+                    <div class="help-text">发送给用户的邮件内容模板，可以使用占位符如：{jobId}、{date}等</div>
+                </div>
+                
+                <hr>
+                
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <span th:text="${selectedMail != null ? '更新配置' : '保存配置'}"></span>
+                    </button>
+                    <a class="btn btn-secondary btn-lg" th:href="@{/batch/mail}">取消</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- 页面底部信息 -->
+        <div class="text-center text-muted mt-4">
+            <small>KNPiano 批处理管理系统 - 邮件配置管理模块</small>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- 表单验证JavaScript -->
+    <script>
+        $(document).ready(function() {
+            // 表单提交验证
+            $('form').submit(function(e) {
+                var jobId = $('input[name="jobId"]').val().trim();
+                var emailFrom = $('input[name="emailFrom"]').val().trim();
+                
+                if (!jobId) {
+                    alert('请输入作业ID');
+                    $('input[name="jobId"]').focus();
+                    e.preventDefault();
+                    return false;
+                }
+                
+                if (!emailFrom) {
+                    alert('请输入发送方邮箱');
+                    $('input[name="emailFrom"]').focus();
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // 邮箱格式验证
+                var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailFrom)) {
+                    alert('发送方邮箱格式不正确');
+                    $('input[name="emailFrom"]').focus();
+                    e.preventDefault();
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // 输入提示
+            $('input, textarea').on('focus', function() {
+                $(this).removeClass('is-invalid');
+            });
+        });
+    </script>
+</body>
+
+</html>

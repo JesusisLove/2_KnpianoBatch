@@ -1,0 +1,46 @@
+2025-07-27 18:53:17.537 [main] INFO  [com.liu.knbatch.KnpianoBatchApplication] - Starting KnpianoBatchApplication using Java 23 on ryuugiminnoMac-Studio.local with PID 45019 (/Users/kazuyoshi/Documents/KnPianoBatchRepository/KnpianoBatch/target/classes started by kazuyoshi in /Users/kazuyoshi/Documents/KnPianoBatchRepository/KnpianoBatch)
+2025-07-27 18:53:17.538 [main] DEBUG [com.liu.knbatch.KnpianoBatchApplication] - Running with Spring Boot v2.7.18, Spring v5.3.31
+2025-07-27 18:53:17.538 [main] INFO  [com.liu.knbatch.KnpianoBatchApplication] - The following 1 profile is active: "batch"
+2025-07-27 18:53:17.689 [main] DEBUG [org.apache.ibatis.logging.LogFactory] - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+2025-07-27 18:53:17.840 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Starting...
+2025-07-27 18:53:18.936 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Start completed.
+2025-07-27 18:53:21.274 [main] INFO  [com.liu.knbatch.KnpianoBatchApplication] - Started KnpianoBatchApplication in 3.898 seconds (JVM running for 4.03)
+2025-07-27 18:53:25.821 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - *************************************************
+2025-07-27 18:53:25.821 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业开始执行
+2025-07-27 18:53:25.822 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业名称: KNDB1010
+2025-07-27 18:53:25.822 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 执行模式: MANUAL
+2025-07-27 18:53:25.822 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 基准日期: 20250801
+2025-07-27 18:53:25.823 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业ID: 3
+2025-07-27 18:53:25.824 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 开始时间: Sun Jul 27 18:53:25 JST 2025
+2025-07-27 18:53:25.824 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - *************************************************
+2025-07-27 18:53:29.028 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - ========== KNDB1010 批处理开始执行 ==========
+2025-07-27 18:53:29.029 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 批处理参数 - 基准日期: 20250801, 执行模式: MANUAL
+2025-07-27 18:53:29.031 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 目标处理月份: 2025-08
+2025-07-27 18:53:29.032 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 步骤1: 开始获取排课钢琴错误级别的课程记录...
+2025-07-27 18:53:30.265 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 步骤1: 完成 - 发现错误级别课程记录数: 2
+2025-07-27 18:53:30.265 [main] DEBUG [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 错误课程记录详情:
+2025-07-27 18:53:30.265 [main] DEBUG [com.liu.knbatch.tasklet.KNDB1010Tasklet] -   - 学生ID: kn-stu-41, 科目ID: kn-sub-1, 当前级别: kn-sub-eda-6, 排课日期: 2025-08-01 18:00:00
+2025-07-27 18:53:30.265 [main] DEBUG [com.liu.knbatch.tasklet.KNDB1010Tasklet] -   - 学生ID: kn-stu-51, 科目ID: kn-sub-1, 当前级别: kn-sub-eda-8, 排课日期: 2025-08-02 08:15:00
+2025-07-27 18:53:30.265 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 步骤2: 开始执行钢琴级别课程数据矫正...
+2025-07-27 18:53:31.669 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 步骤2: 完成 - 成功矫正课程记录数: 2
+2025-07-27 18:53:31.670 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 验证: 开始验证矫正结果...
+2025-07-27 18:53:32.706 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 验证: 成功 - 所有错误级别课程已完成矫正
+2025-07-27 18:53:32.707 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - ========== KNDB1010 批处理执行完成 ==========
+2025-07-27 18:53:32.708 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 批处理名称: KNDB1010
+2025-07-27 18:53:32.708 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 执行状态: SUCCESS
+2025-07-27 18:53:32.708 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 处理数据条数: 2
+2025-07-27 18:53:32.709 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 更新数据条数: 2
+2025-07-27 18:53:32.709 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 执行时间: 3679 ms (3.679 秒)
+2025-07-27 18:53:32.714 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - 执行结束时间: 2025-07-27 18:53:32
+2025-07-27 18:53:32.714 [main] INFO  [com.liu.knbatch.tasklet.KNDB1010Tasklet] - ================================================
+2025-07-27 18:53:34.788 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - *************************************************
+2025-07-27 18:53:34.789 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业执行完成
+2025-07-27 18:53:34.789 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业名称: KNDB1010
+2025-07-27 18:53:34.789 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 作业ID: 3
+2025-07-27 18:53:34.789 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 执行状态: COMPLETED
+2025-07-27 18:53:34.789 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 开始时间: Sun Jul 27 18:53:25 JST 2025
+2025-07-27 18:53:34.790 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 结束时间: Sun Jul 27 18:53:34 JST 2025
+2025-07-27 18:53:34.790 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - 执行耗时: 9709 ms (9.709 秒)
+2025-07-27 18:53:34.790 [main] INFO  [c.l.k.c.BatchConfiguration$KNDB1010JobExecutionListener] - *************************************************
+2025-07-27 18:53:35.490 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown initiated...
+2025-07-27 18:53:36.029 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown completed.
