@@ -72,3 +72,14 @@ BOOT-INF/
 # 忽略工具文件
 setup-env-prod.sh
 setup-env-test_or_dev.sh
+
+# 环境变量文件（包含敏感信息，禁止提交）
+.env
+.env.local
+.env.prod
+.env.dev
+.env.test
+.env.*.local
+
+# AI辅助开发配置文件
+CLAUDE.md
