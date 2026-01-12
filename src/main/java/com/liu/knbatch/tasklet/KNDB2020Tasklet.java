@@ -108,7 +108,7 @@ public class KNDB2020Tasklet implements Tasklet {
             List<KNDB2020FeeErrorEntity> feeErrorList = null;
             List<KNDB2020PayErrorEntity> payErrorList = null;
 
-            if (validationSummary.getErrorMonthCount() > 0) {
+            if (validationSummary.getErrorMonthCount() != null && validationSummary.getErrorMonthCount() > 0) {
                 addLog(logContent, "步骤3: 发现错误月份，开始检查费用表和支付表...");
                 logger.info("步骤3: 发现错误月份，开始检查费用表和支付表...");
 
@@ -259,7 +259,7 @@ public class KNDB2020Tasklet implements Tasklet {
         content.append("  最终结果: ").append(validationSummary.getFinalResult()).append("\n\n");
 
         // 如果有错误月份，显示月度明细
-        if (validationSummary.getErrorMonthCount() > 0 && monthSummaryList != null) {
+        if (validationSummary.getErrorMonthCount() != null && validationSummary.getErrorMonthCount() > 0 && monthSummaryList != null) {
             content.append("【月度汇总明细】\n");
             content.append(String.format("%-10s %15s %15s %15s %10s\n",
                     "月份", "应收", "已支付", "未支付", "验证"));
@@ -307,7 +307,7 @@ public class KNDB2020Tasklet implements Tasklet {
         }
 
         // 如果没有发现错误表记录但有错误月份
-        if (validationSummary.getErrorMonthCount() > 0 &&
+        if (validationSummary.getErrorMonthCount() != null && validationSummary.getErrorMonthCount() > 0 &&
             (feeErrorList == null || feeErrorList.isEmpty()) &&
             (payErrorList == null || payErrorList.isEmpty())) {
             content.append("【警告】发现错误月份，但费用表和支付表未发现明显错误记录。\n");
@@ -339,13 +339,17 @@ public class KNDB2020Tasklet implements Tasklet {
             return content.toString();
         }
 
-        if (validationSummary.getErrorMonthCount() == 0) {
+        if (validationSummary.getErrorMonthCount() != null && validationSummary.getErrorMonthCount() == 0) {
             content.append("验证结果: ").append(validationSummary.getFinalResult()).append("\n");
             content.append("所有月份的课费数据均正确无误。\n");
         } else {
             content.append("验证结果: ").append(validationSummary.getFinalResult()).append("\n\n");
-            content.append("发现 ").append(validationSummary.getErrorMonthCount())
-                    .append(" 个月份的数据存在异常。\n\n");
+            if (validationSummary.getErrorMonthCount() != null) {
+                content.append("发现 ").append(validationSummary.getErrorMonthCount())
+                        .append(" 个月份的数据存在异常。\n\n");
+            } else {
+                content.append("指定年份无数据或数据异常。\n\n");
+            }
 
             if (feeErrorList != null && !feeErrorList.isEmpty()) {
                 content.append("费用表错误记录数: ").append(feeErrorList.size()).append("\n");

@@ -13,6 +13,10 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import com.liu.knbatch.config.BatchJobRegistry;
 import com.liu.knbatch.config.BatchJobInfo;
+import com.liu.knbatch.dao.BatchJobConfigDao;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -24,6 +28,7 @@ import java.util.List;
 @MapperScan("com.liu.knbatch.dao")
 public class KnpianoBatchApplication {
 
+    private static final Logger logger = LoggerFactory.getLogger(KnpianoBatchApplication.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     public static void main(String[] args) {
@@ -58,8 +63,6 @@ public class KnpianoBatchApplication {
     private static void executeManualJob(String[] args) {
         System.setProperty("spring.profiles.active", "dev");
         System.out.println("=== 手动执行模式 ===");
-        System.out.println("使用环境: 开发环境 (dev)");
-        System.out.println("适用于: 本地开发、功能测试、问题排查");
         
         // 创建非Web应用
         SpringApplication app = new SpringApplication(KnpianoBatchApplication.class);
@@ -227,15 +230,74 @@ public class KnpianoBatchApplication {
         // 通过注册表动态获取作业信息
         BatchJobRegistry registry = context.getBean(BatchJobRegistry.class);
         BatchJobInfo jobInfo = registry.getJobInfo(businessModule);
-        
+
         if (jobInfo == null) {
-            // 显示可用的作业列表
-            System.err.println("未找到业务模块 " + businessModule + " 对应的批处理作业配置");
-            System.err.println("可用的作业列表:");
-            for (BatchJobInfo availableJob : registry.getAllJobs()) {
-                System.err.println("  - " + availableJob.getJobId() + ": " + availableJob.getDescription());
+            // 注册表中未找到，可能是作业被禁用，尝试从数据库直接查询
+            String warningMsg = "警告: 作业 " + businessModule + " 未在注册表中找到";
+            System.out.println("========================================");
+            System.out.println(warningMsg);
+            logger.warn(warningMsg);
+
+            String reasonMsg = "可能原因: 该作业在数据库中被禁用 (batch_enabled=0)";
+            System.out.println(reasonMsg);
+            logger.info(reasonMsg);
+
+            String queryMsg = "正在从数据库直接查询作业配置...";
+            System.out.println(queryMsg);
+            logger.info(queryMsg);
+            System.out.println("========================================");
+
+            // 从数据库直接查询（手动模式下忽略 batch_enabled 状态）
+            BatchJobConfigDao dao = context.getBean(BatchJobConfigDao.class);
+            jobInfo = dao.findByJobId(businessModule);
+
+            if (jobInfo == null) {
+                // 数据库中也不存在
+                String errorMsg = "错误: 作业 " + businessModule + " 在数据库中不存在";
+                System.err.println("========================================");
+                System.err.println(errorMsg);
+                logger.error(errorMsg);
+                System.err.println("========================================");
+
+                System.err.println("可用的已启用作业列表:");
+                List<BatchJobInfo> availableJobs = registry.getAllJobs();
+                if (availableJobs.isEmpty()) {
+                    String noJobMsg = "  (当前没有已启用的作业)";
+                    System.err.println(noJobMsg);
+                    logger.warn(noJobMsg);
+                } else {
+                    for (BatchJobInfo availableJob : availableJobs) {
+                        String jobMsg = "  - " + availableJob.getJobId() + ": " + availableJob.getDescription();
+                        System.err.println(jobMsg);
+                        logger.info(jobMsg);
+                    }
+                }
+
+                System.err.println("========================================");
+                System.err.println("建议:");
+                System.err.println("1. 检查作业ID是否正确");
+                System.err.println("2. 确认是否已执行相应的数据库初始化SQL脚本");
+                System.err.println("3. 检查数据库表 t_batch_job_config 中的配置");
+                System.err.println("========================================");
+
+                logger.error("作业 {} 不存在，已优雅退出，未执行任何操作", businessModule);
+                return; // 优雅退出，不抛异常
+            } else {
+                // 数据库中存在但被禁用
+                System.out.println("========================================");
+                String foundMsg = "提示: 作业 " + businessModule + " 在数据库中存在";
+                System.out.println(foundMsg);
+                logger.info(foundMsg);
+
+                String statusMsg = "状态: " + (jobInfo.isEnabled() ? "已启用 (batch_enabled=1)" : "已禁用 (batch_enabled=0)");
+                System.out.println(statusMsg);
+                logger.info(statusMsg);
+
+                String manualMsg = "手动执行模式: 忽略禁用状态，继续执行";
+                System.out.println(manualMsg);
+                logger.info(manualMsg);
+                System.out.println("========================================");
             }
-            throw new IllegalArgumentException("未找到业务模块 " + businessModule + " 对应的批处理作业配置");
         }
         
         // 动态获取Spring Bean中的Job实例
@@ -248,14 +310,31 @@ public class KnpianoBatchApplication {
                 .addLong("timestamp", System.currentTimeMillis())
                 .toJobParameters();
 
-        System.out.println("开始执行批处理作业: " + jobName);
-        System.out.println("业务模块: " + businessModule);
-        System.out.println("作业描述: " + jobInfo.getDescription());
-        System.out.println("基准日期: " + baseDate);
-        System.out.println("执行环境: 开发环境 (dev)");
-        
+        String startMsg = "开始执行批处理作业: " + jobName;
+        System.out.println(startMsg);
+        logger.info(startMsg);
+
+        String moduleMsg = "业务模块: " + businessModule;
+        System.out.println(moduleMsg);
+        logger.info(moduleMsg);
+
+        String descMsg = "作业描述: " + jobInfo.getDescription();
+        System.out.println(descMsg);
+        logger.info(descMsg);
+
+        String dateMsg = "基准日期: " + baseDate;
+        System.out.println(dateMsg);
+        logger.info(dateMsg);
+
+        String envMsg = "执行环境: 开发环境 (dev)";
+        System.out.println(envMsg);
+        logger.info(envMsg);
+
         jobLauncher.run(job, jobParameters);
-        System.out.println("批处理作业执行完成");
+
+        String completeMsg = "批处理作业执行完成";
+        System.out.println(completeMsg);
+        logger.info(completeMsg);
     }
     
     /**
