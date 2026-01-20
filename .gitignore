@@ -82,4 +82,4 @@ setup-env-test_or_dev.sh
 .env.*.local
 
 # AI辅助开发配置文件
-CLAUDE.md.claude/
+.claude/

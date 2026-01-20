@@ -75,8 +75,16 @@ public class SimpleEmailService {
             message.setTo(recipients);
             
             // 设置邮件主题
+            // [2026-01-19] 测试环境邮件件名追加环境标识
             String status = success ? "成功" : "失败";
-            String subject = String.format("[KNBatch] %s 执行%s", jobName, status);
+            String subject;
+            if (isProductionEnvironment()) {
+                // 本番环境：そのまま
+                subject = String.format("[KNBatch] %s 执行%s", jobName, status);
+            } else {
+                // 测试环境：追加环境标识
+                subject = String.format("[KNBatch-%s] %s 执行%s", deployEnvironment, jobName, status);
+            }
             message.setSubject(subject);
             
             // 设置邮件正文（直接包含日志内容）
@@ -135,5 +143,21 @@ public class SimpleEmailService {
      */
     private boolean shouldSendEmail(boolean success) {
         return (success && sendOnSuccess) || (!success && sendOnFailure);
+    }
+
+    /**
+     * [2026-01-19] 判断是生产环境，测试环境，开发环境等
+     * 用于决定邮件件名是否追加环境标识
+     */
+    private boolean isProductionEnvironment() {
+        if (deployEnvironment == null) {
+            return false;
+        }
+        String env = deployEnvironment.toLowerCase().trim();
+        return "production".equals(env) ||
+               "生产环境".equals(deployEnvironment) ||
+               "测试環境".equals(deployEnvironment) ||
+               "开发环境".equals(deployEnvironment) ||
+               "prod".equals(env);
     }
 }
