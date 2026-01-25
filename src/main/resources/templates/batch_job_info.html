@@ -200,8 +200,8 @@
                         <div class="form-group">
                             <label>是否启用</label>
                             <select name="enabled" class="form-control">
-                                <option value="true" th:selected="${selectedJob != null and selectedJob.enabled == 1}">启用</option>
-                                <option value="false" th:selected="${selectedJob != null and selectedJob.enabled == 0}">停用</option>
+                                <option value="true" th:selected="${selectedJob != null and selectedJob.enabled}">启用</option>
+                                <option value="false" th:selected="${selectedJob != null and !selectedJob.enabled}">停用</option>
                             </select>
                         </div>
                         

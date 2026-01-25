@@ -19,7 +19,7 @@
         select * from t_batch_job_config;
     </select>
 
-    <select id="findByJobId" resultType="com.liu.knbatch.config.BatchJobInfo">
+    <select id="findByJobId" resultMap="BatchJobInfoMap">
         select * from t_batch_job_config
         where job_id = #{jobId}
     </select>
