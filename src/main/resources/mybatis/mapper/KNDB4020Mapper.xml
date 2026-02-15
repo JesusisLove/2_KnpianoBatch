@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.liu.knbatch.dao.KNDB4020Dao">
+
+    <!-- 结果映射 -->
+    <resultMap id="KNDB4020EntityMap" type="com.liu.knbatch.entity.KNDB4020Entity">
+        <result property="lessonId" column="lesson_id"/>
+        <result property="stuId" column="stu_id"/>
+        <result property="studentName" column="student_name"/>
+        <result property="subjectId" column="subject_id"/>
+        <result property="subjectName" column="subject_name"/>
+        <result property="subjectSubName" column="subject_sub_name"/>
+        <result property="schedualDateTime" column="schedual_date"/>
+        <result property="classDuration" column="class_duration"/>
+        <result property="schedualType" column="schedual_type"/>
+    </resultMap>
+
+    <!-- 获取周期范围 -->
+    <select id="getWeekRange" parameterType="string" resultType="java.util.HashMap">
+        SELECT
+            DATE_FORMAT(start_week_date, '%Y-%m-%d') as startDate,
+            DATE_FORMAT(end_week_date, '%Y-%m-%d') as endDate
+        FROM t_fixedlesson_status
+        WHERE week_number = WEEKOFYEAR(#{baseDate})
+        AND #{baseDate} BETWEEN start_week_date AND end_week_date
+        LIMIT 1
+    </select>
+
+    <!-- 统计手动排课记录数 -->
+    <select id="countManualLessons" resultType="int">
+        SELECT COUNT(*)
+        FROM t_info_lesson l
+        WHERE l.schedual_type = 0
+        AND DATE(l.schedual_date) BETWEEN #{startDate} AND #{endDate}
+        AND l.del_flg = 0
+    </select>
+
+    <!-- 查询自动排课列表 (schedual_type = 1) -->
+    <select id="getAutoLessons" resultMap="KNDB4020EntityMap">
+        SELECT
+            l.lesson_id,
+            l.stu_id,
+            s.stu_name as student_name,
+            l.subject_id,
+            sub.subject_name,
+            COALESCE(subsub.subject_sub_name, '') as subject_sub_name,
+            l.schedual_date,
+            l.class_duration,
+            l.schedual_type
+        FROM t_info_lesson l
+        LEFT JOIN t_info_student s ON l.stu_id = s.stu_id
+        LEFT JOIN t_info_subject sub ON l.subject_id = sub.subject_id
+        LEFT JOIN t_info_subject_sub subsub ON l.subject_sub_id = subsub.subject_sub_id
+        WHERE l.schedual_type = 1
+        AND DATE(l.schedual_date) BETWEEN #{startDate} AND #{endDate}
+        AND l.del_flg = 0
+        ORDER BY l.schedual_date
+    </select>
+
+    <!-- 查询手动排课列表 (schedual_type = 0) -->
+    <select id="getManualLessons" resultMap="KNDB4020EntityMap">
+        SELECT
+            l.lesson_id,
+            l.stu_id,
+            s.stu_name as student_name,
+            l.subject_id,
+            sub.subject_name,
+            COALESCE(subsub.subject_sub_name, '') as subject_sub_name,
+            l.schedual_date,
+            l.class_duration,
+            l.schedual_type
+        FROM t_info_lesson l
+        LEFT JOIN t_info_student s ON l.stu_id = s.stu_id
+        LEFT JOIN t_info_subject sub ON l.subject_id = sub.subject_id
+        LEFT JOIN t_info_subject_sub subsub ON l.subject_sub_id = subsub.subject_sub_id
+        WHERE l.schedual_type = 0
+        AND DATE(l.schedual_date) BETWEEN #{startDate} AND #{endDate}
+        AND l.del_flg = 0
+        ORDER BY l.schedual_date
+    </select>
+
+</mapper>
