@@ -654,7 +654,7 @@ ORDER BY job_id;
 ### 步骤1: 编译项目
 
 ```bash
-cd /Users/kazuyoshi/Documents/KnPianoBatchRepository/KnpianoBatch
+cd $HOME/Documents/KnPianoBatchRepository/KnpianoBatch
 mvn clean package -DskipTests
 ```
 
