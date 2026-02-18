@@ -254,3 +254,7 @@ Each job follows the pattern: Config class defines the Job bean, Tasklet impleme
 - Never commit email credentials; use environment variables
 - The DatabaseConnectionWaiter.java ensures database is ready before application starts
 - Job execution parameters always include: baseDate, jobMode, businessModule, timestamp
+
+## 讨论阶段注意事项
+
+问题讨论阶段只是为了理清问题的思路和业务逻辑方案的技术可行性，不要写代码避免浪费AI的Token。
