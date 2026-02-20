@@ -4,18 +4,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>批处理作业配置管理</title>
-    
+    <title>作业执行历史</title>
+
     <!-- Bootstrap core CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <style>
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
         }
-        
+
         .container-fluid {
             padding: 10px 20px;
             height: 100vh;
@@ -23,7 +23,6 @@
             flex-direction: column;
         }
 
-        /* 页面标题样式 */
         .page-title {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -40,7 +39,6 @@
             font-size: 22px;
         }
 
-        /* 导航按钮 */
         .nav-buttons {
             margin: 6px 0;
         }
@@ -49,7 +47,6 @@
             margin-right: 10px;
         }
 
-        /* 业务说明区域样式 */
         .business-description {
             background: linear-gradient(135deg, #e0f7ff 0%, #b3e5fc 100%);
             border-radius: 8px;
@@ -63,14 +60,12 @@
             font-size: 13px;
         }
 
-        /* 上半部分容器 - 不伸缩，根据内容自适应高度 */
         .upper-section {
             flex: 0 0 auto;
             display: flex;
             flex-direction: column;
         }
 
-        /* 下半部分容器 - 占用剩余所有空间 */
         .lower-section {
             flex: 1;
             display: flex;
@@ -78,7 +73,6 @@
             min-height: 0;
         }
 
-        /* 搜索区域样式 - 移除 flex-grow */
         .search-section {
             background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);
             border-radius: 10px;
@@ -100,7 +94,6 @@
             box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.25);
         }
 
-        /* 搜索按钮样式 */
         .btn-search {
             background: linear-gradient(45deg, #ff9800, #f57c00);
             border: none;
@@ -118,26 +111,6 @@
             box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
         }
 
-        /* 追加按钮样式 */
-        .btn-add-in-search {
-            background: linear-gradient(45deg, #4caf50, #8bc34a);
-            border: none;
-            padding: 6px 20px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            color: white;
-            white-space: nowrap;
-        }
-
-        .btn-add-in-search:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-            color: white;
-        }
-
-        /* 状态信息样式 - 紧凑型 */
         .status-info-inline {
             background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
             border-radius: 6px;
@@ -155,7 +128,6 @@
             color: #1976d2;
         }
 
-        /* 表格区域样式 */
         .table-section {
             background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
             border-radius: 10px;
@@ -229,32 +201,32 @@
             max-width: 150px;
         }
 
-        /* 操作按钮样式 */
-        .styled-table .btn-primary {
-            background: linear-gradient(45deg, #2196f3, #1976d2);
-            border: none;
-            border-radius: 12px;
-            padding: 4px 10px;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+        /* 状态颜色 */
+        .status-completed {
+            color: #4caf50;
+            font-weight: bold;
         }
 
-        .styled-table .btn-primary:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        .status-failed {
+            color: #f44336;
+            font-weight: bold;
         }
 
-        /* 消息样式 */
-        .alert-danger {
-            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-            border: 2px solid #f44336;
-            border-radius: 12px;
-            color: #c62828;
-            font-weight: 600;
+        .status-started {
+            color: #ff9800;
+            font-weight: bold;
         }
 
-        /* 空数据提示样式 */
+        .status-stopped {
+            color: #9e9e9e;
+            font-weight: bold;
+        }
+
+        .status-unknown {
+            color: #607d8b;
+            font-weight: bold;
+        }
+
         .empty-data {
             text-align: center;
             color: #666;
@@ -263,20 +235,6 @@
             font-size: 18px;
         }
 
-        /* 状态标签样式 */
-        .status-enabled {
-            color: #4caf50;
-            font-weight: bold;
-            font-size: 13px;
-        }
-
-        .status-disabled {
-            color: #f44336;
-            font-weight: bold;
-            font-size: 13px;
-        }
-
-        /* 页面底部信息 */
         .footer-info {
             margin-top: 10px;
             flex-shrink: 0;
@@ -288,59 +246,57 @@
     <div class="container-fluid">
         <!-- 上半部分 -->
         <div class="upper-section">
-            <!-- 页面标题 -->
             <div class="page-title">
-                <h2>批处理作业配置管理</h2>
+                <h2>作业执行历史</h2>
             </div>
 
-            <!-- 导航按钮 -->
             <div class="nav-buttons">
                 <a href="/main.html" class="btn btn-secondary">返回主菜单</a>
+                <a href="/batch/job" class="btn btn-info">作业配置管理</a>
                 <a href="/batch/mail" class="btn btn-info">邮件配置管理</a>
             </div>
 
-            <!-- 业务说明 -->
             <div class="business-description">
-                <p><strong>业务说明：</strong>管理批处理作业配置信息，包括作业ID、Bean名称、Cron表达式等的查询、新增、修改功能</p>
+                <p><strong>业务说明：</strong>查看批处理作业的执行历史记录，包括执行ID、作业名、开始/结束时间、耗时、执行状态等信息</p>
             </div>
 
-            <!-- 显示错误消息 -->
-            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-                <strong>错误：</strong><span th:text="${errorMessage}">错误信息</span>
-            </div>
-
-            <!-- 检索区域（整合状态信息） -->
+            <!-- 检索区域 -->
             <div class="search-section">
-                <h6 class="mb-2" style="color: #e65100; font-weight: bold;">作业配置检索</h6>
-                
-                <!-- 数据状态信息 - 整合到检索区域内 -->
-                <div th:if="${jobList != null and !jobList.isEmpty()}" class="status-info-inline">
-                    成功加载 <strong th:text="${jobList.size()}">0</strong> 条作业配置记录
+                <h6 class="mb-2" style="color: #e65100; font-weight: bold;">执行历史检索</h6>
+
+                <div th:if="${historyList != null and !historyList.isEmpty()}" class="status-info-inline">
+                    共 <strong th:text="${historyList.size()}">0</strong> 条执行记录
                 </div>
 
-                <div th:if="${jobList == null or jobList.isEmpty()}" class="status-info-inline info">
-                    当前没有作业配置数据，请点击"追加新作业配置"按钮添加数据
+                <div th:if="${historyList == null or historyList.isEmpty()}" class="status-info-inline info">
+                    当前没有执行历史记录，作业执行后会自动记录
                 </div>
 
-                <form action="#" th:action="@{/batch/job/search}" method="get">
+                <form action="#" th:action="@{/batch/history/search}" method="get">
                     <div class="form-row align-items-center">
+                        <div class="form-group col-md-2 mb-0">
+                            <label for="searchYear" class="font-weight-bold mb-1">年：</label>
+                            <select class="form-control" id="searchYear" name="searchYear"
+                                th:data-selected="${searchYear}">
+                            </select>
+                        </div>
+                        <div class="form-group col-md-2 mb-0">
+                            <label for="searchMonth" class="font-weight-bold mb-1">月：</label>
+                            <select class="form-control" id="searchMonth" name="searchMonth"
+                                th:data-selected="${searchMonth}">
+                            </select>
+                        </div>
                         <div class="form-group col-md-3 mb-0">
-                            <label for="jobId" class="font-weight-bold mb-1">作业ID：</label>
-                            <input type="text" class="form-control" id="jobId" name="jobId"
-                                th:value="${searchJobId}" placeholder="留空查询全部">
-                            <small class="form-text text-muted" style="margin-top: 2px;">留空则查询全部配置</small>
+                            <label for="jobName" class="font-weight-bold mb-1">作业名：</label>
+                            <input type="text" class="form-control" id="jobName" name="jobName"
+                                th:value="${searchJobName}" placeholder="留空查询全部">
+                            <small class="form-text text-muted" style="margin-top: 2px;">留空则查询全部执行记录</small>
                         </div>
                         <div class="form-group col-md-2 mb-0">
                             <label class="d-block mb-1">&nbsp;</label>
                             <button type="submit" class="btn btn-search btn-block">
                                 检索
                             </button>
-                        </div>
-                        <div class="form-group col-md-3 mb-0">
-                            <label class="d-block mb-1">&nbsp;</label>
-                            <a class="btn btn-add-in-search btn-block" th:href="@{/batch/job/add}">
-                                + 追加新作业配置
-                            </a>
                         </div>
                     </div>
                 </form>
@@ -349,61 +305,42 @@
 
         <!-- 下半部分 -->
         <div class="lower-section">
-            <!-- 明细表格区域 -->
             <div class="table-section">
-                <h6 class="mb-1" style="color: #e65100; font-weight: bold;">作业配置明细</h6>
+                <h6 class="mb-1" style="color: #e65100; font-weight: bold;">执行记录明细</h6>
                 <div class="table-responsive">
                     <table class="table table-striped table-sm styled-table">
                         <thead>
                             <tr>
-                                <th width="10%">作业ID</th>
-                                <th width="12%">Bean名称</th>
-                                <th width="15%">作业描述</th>
-                                <th width="12%">Cron表达式</th>
-                                <th width="15%">Cron描述</th>
-                                <th width="15%">目标描述</th>
-                                <th width="8%">启用状态</th>
-                                <th width="13%">操作</th>
+                                <th width="7%">执行ID</th>
+                                <th width="14%">作业名</th>
+                                <th width="17%">开始时间</th>
+                                <th width="5%">星期</th>
+                                <th width="17%">结束时间</th>
+                                <th width="9%">耗时</th>
+                                <th width="10%">状态</th>
+                                <th width="12%">退出码</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- 有数据时显示数据 -->
-                            <tr th:each="job:${jobList}" th:if="${jobList != null and !jobList.isEmpty()}">
+                            <tr th:each="record : ${historyList}" th:if="${historyList != null and !historyList.isEmpty()}">
                                 <td>
-                                    <strong th:text="${job.jobId}">作业ID</strong>
+                                    <strong th:text="${record.executionId}">ID</strong>
                                 </td>
+                                <td th:text="${record.jobName}">作业名</td>
+                                <td th:text="${record.startTime != null ? #dates.format(record.startTime, 'yyyy-MM-dd HH:mm:ss') : '-'}">开始时间</td>
+                                <td th:text="${record.dayOfWeek}">星期</td>
+                                <td th:text="${record.endTime != null ? #dates.format(record.endTime, 'yyyy-MM-dd HH:mm:ss') : '-'}">结束时间</td>
+                                <td th:text="${record.duration}">耗时</td>
                                 <td>
-                                    <code th:text="${job.beanName}">Bean名称</code>
+                                    <span th:class="${record.statusClass}" th:text="${record.status}">状态</span>
                                 </td>
-                                <td th:text="${job.description}" title="${job.description}">
-                                    作业描述
-                                </td>
-                                <td>
-                                    <code th:text="${job.cronExpression}" title="${job.cronExpression}">Cron表达式</code>
-                                </td>
-                                <td th:text="${job.cronDescription}" title="${job.cronDescription}">
-                                    Cron描述
-                                </td>
-                                <td th:text="${job.targetDescription}" title="${job.targetDescription}">
-                                    目标描述
-                                </td>
-                                <td>
-                                    <span th:class="${job.enabled ? 'status-enabled' : 'status-disabled'}" 
-                                          th:text="${job.enabled ? '启用' : '停用'}">状态</span>
-                                </td>
-                                <td>
-                                    <a class="btn btn-sm btn-primary" th:href="@{/batch/job/}+${job.jobId}" 
-                                       title="编辑此作业配置">
-                                        编辑
-                                    </a>
-                                </td>
+                                <td th:text="${record.exitCode}">退出码</td>
                             </tr>
-                            <!-- 无数据时显示提示 -->
-                            <tr th:if="${jobList == null or jobList.isEmpty()}">
+                            <tr th:if="${historyList == null or historyList.isEmpty()}">
                                 <td colspan="8" class="empty-data">
                                     <div>
-                                        <p style="font-size: 18px; margin-bottom: 10px;">暂无作业配置数据</p>
-                                        <p style="color: #999;">请点击上方"追加新作业配置"按钮添加数据</p>
+                                        <p style="font-size: 18px; margin-bottom: 10px;">暂无执行历史记录</p>
+                                        <p style="color: #999;">批处理作业执行后，执行记录会自动显示在此处</p>
                                     </div>
                                 </td>
                             </tr>
@@ -413,9 +350,8 @@
             </div>
         </div>
 
-        <!-- 页面底部信息 -->
         <div class="text-center text-muted footer-info">
-            <small>KNPiano 批处理管理系统 - 作业配置管理模块</small>
+            <small>KNPiano 批处理管理系统 - 作业执行历史模块</small>
         </div>
     </div>
 
@@ -423,24 +359,82 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- 页面交互JavaScript -->
     <script>
         $(document).ready(function() {
-            // 添加表格行点击效果
-            $('.styled-table tbody tr').click(function(e) {
-                if (!$(e.target).closest('a').length) {
-                    $(this).toggleClass('table-active');
+            var now = new Date();
+            var currentYear = now.getFullYear();
+            var currentMonth = now.getMonth() + 1;
+            var startYear = 2025;
+
+            // 从服务端获取已选值（0 = 全部）
+            var rawYear = $('#searchYear').data('selected');
+            var rawMonth = $('#searchMonth').data('selected');
+            var selectedYear = (rawYear !== undefined && rawYear !== '') ? parseInt(rawYear) : currentYear;
+            var selectedMonth = (rawMonth !== undefined && rawMonth !== '') ? parseInt(rawMonth) : currentMonth;
+
+            // 生成年份下拉选项（全部 + 2025 ~ 当前年份）
+            var yearSelect = $('#searchYear');
+            var optAll = $('<option>').val(0).text('全部');
+            if (selectedYear === 0) optAll.attr('selected', true);
+            yearSelect.append(optAll);
+            for (var y = currentYear; y >= startYear; y--) {
+                var opt = $('<option>').val(y).text(y + '年');
+                if (y === selectedYear) opt.attr('selected', true);
+                yearSelect.append(opt);
+            }
+
+            // 生成月份下拉选项
+            function buildMonthOptions(year, keepMonth) {
+                var monthSelect = $('#searchMonth');
+                monthSelect.empty();
+
+                if (year === 0) {
+                    // 年份"全部"→月份只有"全部"，且禁用
+                    monthSelect.append($('<option>').val(0).text('全部'));
+                    monthSelect.val(0);
+                    monthSelect.prop('disabled', true);
+                } else {
+                    monthSelect.prop('disabled', false);
+                    // 添加"全部"选项
+                    monthSelect.append($('<option>').val(0).text('全部'));
+                    for (var m = 1; m <= 12; m++) {
+                        monthSelect.append($('<option>').val(m).text(m + '月'));
+                    }
+                    if (keepMonth !== undefined && keepMonth !== null) {
+                        monthSelect.val(keepMonth);
+                    } else if (year < currentYear) {
+                        monthSelect.val(12);
+                    } else {
+                        monthSelect.val(currentMonth);
+                    }
+                }
+            }
+
+            // 初始化月份
+            buildMonthOptions(selectedYear, selectedMonth);
+
+            // 年份切换时联动月份
+            yearSelect.on('change', function() {
+                var chosenYear = parseInt($(this).val());
+                if (chosenYear === 0) {
+                    buildMonthOptions(0);
+                } else if (chosenYear < currentYear) {
+                    buildMonthOptions(chosenYear, 12);
+                } else {
+                    buildMonthOptions(chosenYear, currentMonth);
                 }
             });
 
-            // 搜索表单增强
-            $('#jobId').on('keypress', function(e) {
+            // 提交前启用disabled的月份下拉框，确保值被提交
+            $('form').on('submit', function() {
+                $('#searchMonth').prop('disabled', false);
+            });
+
+            $('#jobName').on('keypress', function(e) {
                 if (e.which == 13) {
                     $(this).closest('form').submit();
                 }
             });
-
-            // 工具提示初始化
             $('[title]').tooltip();
         });
     </script>

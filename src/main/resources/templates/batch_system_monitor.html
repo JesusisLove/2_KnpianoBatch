@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>系统监控</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .container-fluid {
+            padding: 10px 20px;
+        }
+
+        .page-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 8px 0;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            text-align: center;
+        }
+
+        .page-title h2 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 22px;
+        }
+
+        .nav-buttons {
+            margin: 6px 0;
+        }
+
+        .nav-buttons .btn {
+            margin-right: 10px;
+        }
+
+        .business-description {
+            background: linear-gradient(135deg, #e0f7ff 0%, #b3e5fc 100%);
+            border-radius: 8px;
+            padding: 8px 15px;
+            margin: 6px 0;
+            box-shadow: 0 2px 8px rgba(0, 188, 212, 0.2);
+        }
+
+        .business-description p {
+            margin: 0;
+            font-size: 13px;
+        }
+
+        /* 监控卡片 */
+        .monitor-card {
+            border-radius: 10px;
+            padding: 15px;
+            margin: 6px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .monitor-card h6 {
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .card-memory {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+
+        .card-memory h6 { color: #2e7d32; }
+
+        .card-system {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        .card-system h6 { color: #1565c0; }
+
+        .card-thread {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+
+        .card-thread h6 { color: #e65100; }
+
+        .card-jobs {
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+        }
+
+        .card-jobs h6 { color: #c62828; }
+
+        /* 指标项 */
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            font-size: 13px;
+        }
+
+        .metric-item:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            color: #333;
+        }
+
+        /* 进度条 */
+        .memory-progress {
+            height: 24px;
+            border-radius: 12px;
+            margin: 8px 0;
+            background-color: #e0e0e0;
+        }
+
+        .memory-progress .progress-bar {
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 12px;
+            line-height: 24px;
+        }
+
+        /* 统计数字 */
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            text-align: center;
+            color: #666;
+        }
+
+        .stat-enabled { color: #4caf50; }
+        .stat-disabled { color: #f44336; }
+        .stat-total { color: #2196f3; }
+
+        /* 作业列表表格 */
+        .job-table {
+            width: 100%;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .job-table th {
+            background: linear-gradient(135deg, #37474f 0%, #546e7a 100%);
+            color: white;
+            padding: 6px 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .job-table td {
+            padding: 5px 8px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .job-table tbody tr:nth-child(even) {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .status-enabled {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .status-disabled {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .footer-info {
+            margin-top: 10px;
+        }
+
+        /* 刷新按钮 */
+        .btn-refresh {
+            background: linear-gradient(45deg, #26c6da, #00acc1);
+            border: none;
+            color: white;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 172, 193, 0.4);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <!-- 页面标题 -->
+        <div class="page-title">
+            <h2>系统监控</h2>
+        </div>
+
+        <!-- 导航按钮 -->
+        <div class="nav-buttons">
+            <a href="/main.html" class="btn btn-secondary">返回主菜单</a>
+            <a href="/batch/job" class="btn btn-info">作业配置管理</a>
+            <a href="/batch/history" class="btn btn-info">执行历史</a>
+            <a href="/batch/monitor" class="btn btn-refresh">刷新</a>
+        </div>
+
+        <!-- 业务说明 -->
+        <div class="business-description">
+            <p><strong>业务说明：</strong>监控系统运行状态，包括JVM内存使用、系统信息、线程状态、已注册作业状态等</p>
+        </div>
+
+        <!-- 第一行：JVM内存 + 系统信息 -->
+        <div class="row">
+            <!-- JVM 内存 -->
+            <div class="col-md-6">
+                <div class="monitor-card card-memory">
+                    <h6>JVM 内存使用</h6>
+                    <div class="progress memory-progress">
+                        <div class="progress-bar" role="progressbar"
+                             th:classappend="${memory.barClass}"
+                             th:style="'width:' + ${memory.usagePercent} + '%'"
+                             th:text="${memory.usagePercent} + '%'">
+                        </div>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">已用堆内存</span>
+                        <span class="metric-value" th:text="${memory.usedMB} + ' MB'">0 MB</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">最大堆内存</span>
+                        <span class="metric-value" th:text="${memory.maxMB} + ' MB'">0 MB</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">已分配堆内存</span>
+                        <span class="metric-value" th:text="${memory.committedMB} + ' MB'">0 MB</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">非堆内存使用</span>
+                        <span class="metric-value" th:text="${memory.nonHeapUsedMB} + ' MB'">0 MB</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统信息 -->
+            <div class="col-md-6">
+                <div class="monitor-card card-system">
+                    <h6>系统信息</h6>
+                    <div class="metric-item">
+                        <span class="metric-label">操作系统</span>
+                        <span class="metric-value" th:text="${system.osName} + ' ' + ${system.osVersion}">OS</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">系统架构</span>
+                        <span class="metric-value" th:text="${system.osArch}">arch</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">CPU核数</span>
+                        <span class="metric-value" th:text="${system.cpuCount}">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Java版本</span>
+                        <span class="metric-value" th:text="${system.javaVersion}">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">JVM名称</span>
+                        <span class="metric-value" th:text="${system.jvmName}">JVM</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">启动时间</span>
+                        <span class="metric-value" th:text="${system.startTime}">时间</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">运行时长</span>
+                        <span class="metric-value" th:text="${system.uptime}">时长</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二行：线程信息 + 作业注册状态 -->
+        <div class="row">
+            <!-- 线程信息 -->
+            <div class="col-md-4">
+                <div class="monitor-card card-thread">
+                    <h6>线程信息</h6>
+                    <div class="metric-item">
+                        <span class="metric-label">活跃线程数</span>
+                        <span class="metric-value" th:text="${thread.activeCount}">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">峰值线程数</span>
+                        <span class="metric-value" th:text="${thread.peakCount}">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">守护线程数</span>
+                        <span class="metric-value" th:text="${thread.daemonCount}">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">总启动线程数</span>
+                        <span class="metric-value" th:text="${thread.totalStarted}">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作业注册状态 -->
+            <div class="col-md-8">
+                <div class="monitor-card card-jobs">
+                    <h6>作业注册状态</h6>
+                    <!-- 统计概要 -->
+                    <div class="row text-center mb-2">
+                        <div class="col-4">
+                            <div class="stat-number stat-total" th:text="${jobStats.total}">0</div>
+                            <div class="stat-label">已配置作业</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-number stat-enabled" th:text="${jobStats.enabled}">0</div>
+                            <div class="stat-label">已启用</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-number stat-disabled" th:text="${jobStats.disabled}">0</div>
+                            <div class="stat-label">已停用</div>
+                        </div>
+                    </div>
+                    <!-- 作业列表 -->
+                    <table class="job-table" th:if="${jobStats.jobs != null and !jobStats.jobs.isEmpty()}">
+                        <thead>
+                            <tr>
+                                <th>作业ID</th>
+                                <th>Bean名称</th>
+                                <th>Cron表达式</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="job : ${jobStats.jobs}">
+                                <td th:text="${job.jobId}">ID</td>
+                                <td><code th:text="${job.beanName}">bean</code></td>
+                                <td><code th:text="${job.cronExpression}">cron</code></td>
+                                <td>
+                                    <span th:class="${job.enabled ? 'status-enabled' : 'status-disabled'}"
+                                          th:text="${job.enabled ? '启用' : '停用'}">状态</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页面底部信息 -->
+        <div class="text-center text-muted footer-info">
+            <small>KNPiano 批处理管理系统 - 系统监控模块</small>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

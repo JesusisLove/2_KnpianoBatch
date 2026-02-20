@@ -66,11 +66,15 @@
             <version>8.0.33</version>
         </dependency>
 
-        <!-- H2 Database for Spring Batch JobRepository -->
+        <!--
+            H2 Database - 仅用于测试
+            Spring Batch 元数据已迁移到 MySQL 持久化存储，
+            运行时不再需要 H2，H2 仅保留给单元测试使用。
+        -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
 
         <!-- Test Dependencies -->

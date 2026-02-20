@@ -67,6 +67,7 @@ BOOT-INF/
 .settings/
 .project
 .classpath
+.classpath.txt
 .factorypath
 
 # 忽略工具文件
