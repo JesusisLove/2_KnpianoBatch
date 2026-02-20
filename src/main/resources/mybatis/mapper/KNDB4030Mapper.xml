@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.liu.knbatch.dao.KNDB4030Dao">
+
+    <!-- 結果映射 -->
+    <resultMap id="KNDB4030EntityMap" type="com.liu.knbatch.entity.KNDB4030Entity">
+        <result property="lessonId" column="lesson_id"/>
+        <result property="stuId" column="stu_id"/>
+        <result property="stuName" column="stu_name"/>
+        <result property="subjectId" column="subject_id"/>
+        <result property="subjectName" column="subject_name"/>
+        <result property="subjectSubName" column="subject_sub_name"/>
+        <result property="classDuration" column="class_duration"/>
+        <result property="minutesPerLsn" column="minutes_per_lsn"/>
+        <result property="scanqrDate" column="scanqr_date"/>
+        <result property="schedualDate" column="schedual_date"/>
+    </resultMap>
+
+    <!--
+        查詢碎片課列表
+        碎片課只存在于加課（lesson_type=2）中，正課不存在碎片課。
+        視図 v_info_all_extra_lsns 已限定 lesson_type = 2。
+        核心条件: class_duration < minutes_per_lsn AND pay_flg = 0
+    -->
+    <select id="getFragmentLessons" resultMap="KNDB4030EntityMap">
+        SELECT
+            lsn.lesson_id,
+            lsn.stu_id,
+            doc.stu_name,
+            lsn.subject_id,
+            doc.subject_name,
+            doc.subject_sub_name,
+            lsn.class_duration,
+            doc.minutes_per_lsn,
+            lsn.scanqr_date,
+            lsn.schedual_date
+        FROM v_info_all_extra_lsns lsn
+        INNER JOIN v_latest_subject_info_from_student_document doc
+            ON lsn.stu_id = doc.stu_id
+            AND lsn.subject_id = doc.subject_id
+        WHERE lsn.pay_flg = 0
+          AND lsn.class_duration &lt; doc.minutes_per_lsn
+          AND SUBSTRING(lsn.schedual_date, 1, 4) = #{year}
+        ORDER BY lsn.stu_id, lsn.subject_id, lsn.scanqr_date ASC
+    </select>
+
+</mapper>
