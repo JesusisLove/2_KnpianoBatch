@@ -536,16 +536,16 @@
                                 <td>
                                     <code th:text="${job.beanName}">Bean名称</code>
                                 </td>
-                                <td th:text="${job.description}" title="${job.description}">
+                                <td th:text="${job.description}">
                                     作业描述
                                 </td>
                                 <td>
-                                    <code th:text="${job.cronExpression}" title="${job.cronExpression}">Cron表达式</code>
+                                    <code th:text="${job.cronExpression}">Cron表达式</code>
                                 </td>
-                                <td th:text="${job.cronDescription}" title="${job.cronDescription}">
+                                <td th:text="${job.cronDescription}">
                                     Cron描述
                                 </td>
-                                <td th:text="${job.targetDescription}" title="${job.targetDescription}">
+                                <td th:text="${job.targetDescription}">
                                     目标描述
                                 </td>
                                 <td>
@@ -642,8 +642,6 @@
                 }
             });
 
-            // 工具提示初始化
-            $('[title]').tooltip();
 
             // 立即执行按钮 - 打开 Modal 时记录 jobId
             $(document).on('click', '.btn-run-job', function() {
