@@ -65,12 +65,12 @@ public class KNDB4030Tasklet implements Tasklet {
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         long startTime = System.currentTimeMillis();
         String batchName = "KNDB4030";
-        String description = "零碎課補整節課郵件提醒";
+        String description = "零碎课补整节课邮件提醒";
         boolean success = false;
         StringBuilder logContent = new StringBuilder();
 
-        addLog(logContent, "========== " + batchName + " 批処理開始執行 ==========");
-        logger.info("========== {} 批処理開始執行 ==========", batchName);
+        addLog(logContent, "========== " + batchName + " 批处理开始执行 ==========");
+        logger.info("========== {} 批处理开始执行 ==========", batchName);
 
         try {
             // ====== STEP 1: 獲取基準日期参数 ======
@@ -82,24 +82,24 @@ public class KNDB4030Tasklet implements Tasklet {
             // 從baseDate提取年份
             String year = baseDate.substring(0, 4);
 
-            addLog(logContent, "批処理参数 - 基準日期: " + baseDate
-                    + ", 年份: " + year + ", 執行模式: " + jobMode);
-            logger.info("批処理参数 - 基準日期: {}, 年份: {}, 執行模式: {}",
+            addLog(logContent, "批处理参数 - 基准日期: " + baseDate
+                    + ", 年份: " + year + ", 执行模式: " + jobMode);
+            logger.info("批处理参数 - 基准日期: {}, 年份: {}, 执行模式: {}",
                     baseDate, year, jobMode);
 
             // ====== STEP 2: 查詢所有碎片課 ======
-            addLog(logContent, "步驟1: 查詢碎片課列表（僅加課 lesson_type=2）...");
-            logger.info("步驟1: 查詢碎片課列表（僅加課 lesson_type=2）...");
+            addLog(logContent, "步骤1: 查询碎片课列表...");
+            logger.info("步骤1: 查询碎片课列表...");
 
             List<KNDB4030Entity> allFragments = kndb4030Dao.getFragmentLessons(year);
 
-            addLog(logContent, "碎片課總記録数: " + allFragments.size());
-            logger.info("碎片課總記録数: {}", allFragments.size());
+            addLog(logContent, "碎片课总记录数: " + allFragments.size());
+            logger.info("碎片课总记录数: {}", allFragments.size());
 
             // ====== STEP 3: 判断是否有碎片課 ======
             if (allFragments.isEmpty()) {
-                addLog(logContent, "無碎片課記録，跳過検出");
-                logger.info("無碎片課記録，跳過検出");
+                addLog(logContent, "无碎片课记录，跳过检测");
+                logger.info("无碎片课记录，跳过检测");
                 success = true;
                 logExecutionResult(batchName, "SUCCESS", 0, 0, startTime, logContent);
                 sendEmailNotification(batchName, description, success,
@@ -108,8 +108,8 @@ public class KNDB4030Tasklet implements Tasklet {
             }
 
             // ====== STEP 4: 按学生+科目分組 ======
-            addLog(logContent, "步驟2: 按学生+科目分組...");
-            logger.info("步驟2: 按学生+科目分組...");
+            addLog(logContent, "步骤2: 按学生+科目分组...");
+            logger.info("步骤2: 按学生+科目分组...");
 
             Map<String, List<KNDB4030Entity>> grouped = allFragments.stream()
                     .collect(Collectors.groupingBy(
@@ -117,12 +117,12 @@ public class KNDB4030Tasklet implements Tasklet {
                             LinkedHashMap::new,
                             Collectors.toList()));
 
-            addLog(logContent, "分組数量: " + grouped.size());
-            logger.info("分組数量: {}", grouped.size());
+            addLog(logContent, "分组数量: " + grouped.size());
+            logger.info("分组数量: {}", grouped.size());
 
-            // ====== STEP 5: 毎組執行貪心検出 ======
-            addLog(logContent, "步驟3: 執行貪心合併検出...");
-            logger.info("步驟3: 執行貪心合併検出...");
+            // ====== STEP 5: 每组执行贪心检测 ======
+            addLog(logContent, "步骤3: 执行贪心合并检测...");
+            logger.info("步骤3: 执行贪心合并检测...");
 
             List<MergeableGroup> mergeableGroups = new ArrayList<>();
 
@@ -143,26 +143,24 @@ public class KNDB4030Tasklet implements Tasklet {
             }
 
             int totalMergeableLessons = mergeableGroups.size();
-            addLog(logContent, "可合併整課数量: " + totalMergeableLessons);
-            logger.info("可合併整課数量: {}", totalMergeableLessons);
+            addLog(logContent, "可合并整课数量: " + totalMergeableLessons);
+            logger.info("可合并整课数量: {}", totalMergeableLessons);
 
-            // ====== STEP 6: 判断是否有可合併的組合 ======
+            // ====== STEP 6: 判断是否有可合并的组合 ======
             String mergeReport = null;
             if (mergeableGroups.isEmpty()) {
-                addLog(logContent, "無可合併的碎片課，正常結束");
-                logger.info("無可合併的碎片課，正常結束");
+                addLog(logContent, "无可合并的碎片课，正常结束");
+                logger.info("无可合并的碎片课，正常结束");
             } else {
-                // ====== STEP 7: 生成合併提醒報告 ======
-                addLog(logContent, "步驟4: 生成合併提醒報告...");
-                logger.info("步驟4: 生成合併提醒報告...");
+                // ====== STEP 7: 生成合并提醒报告 ======
+                addLog(logContent, "步骤4: 生成合并提醒报告...");
+                logger.info("步骤4: 生成合并提醒报告...");
 
                 mergeReport = reportBuilder.buildReport(mergeableGroups, baseDate);
 
-                // 記録詳情到日誌
-                for (int i = 0; i < mergeableGroups.size(); i++) {
-                    MergeableGroup group = mergeableGroups.get(i);
-                    addLog(logContent, String.format("  可合併 #%d: %s %s: %d個碎片 → 1節整課",
-                            i + 1,
+                // 记录详情到日志
+                for (MergeableGroup group : mergeableGroups) {
+                    addLog(logContent, String.format("  %s %s: %d个碎片 → 1节整课",
                             group.getStuName(),
                             group.getSubjectName(),
                             group.getFragments().size()));
@@ -173,14 +171,14 @@ public class KNDB4030Tasklet implements Tasklet {
             logExecutionResult(batchName, "SUCCESS", allFragments.size(),
                     totalMergeableLessons, startTime, logContent);
 
-            // ====== STEP 8: 發送郵件 ======
+            // ====== STEP 8: 发送邮件 ======
             sendEmailNotification(batchName, description, success,
                     logContent.toString(), mergeReport);
 
         } catch (Exception e) {
-            addLog(logContent, "========== " + batchName + " 批処理執行異常 ==========");
-            addLog(logContent, "錯誤信息: " + e.getMessage());
-            logger.error("========== {} 批処理執行異常 ==========", batchName, e);
+            addLog(logContent, "========== " + batchName + " 批处理执行异常 ==========");
+            addLog(logContent, "错误信息: " + e.getMessage());
+            logger.error("========== {} 批处理执行异常 ==========", batchName, e);
 
             success = false;
             logExecutionResult(batchName, "ERROR", 0, 0, startTime, logContent);
@@ -253,48 +251,40 @@ public class KNDB4030Tasklet implements Tasklet {
         BatchMailInfo mailInfo = mailDao.selectMailInfo(JOB_ID);
 
         if (mailInfo == null) {
-            logger.warn("未找到郵件配置: jobId={}", JOB_ID);
+            logger.warn("未找到邮件配置: jobId={}", JOB_ID);
             return;
         }
 
         try {
             if (emailService != null) {
-                // 1. 給程序維護者發送執行日誌郵件
+                // 1. 给程序维护者发送执行日志邮件
                 emailService.setFromEmail(mailInfo.getEmailFrom());
                 emailService.setToEmails(mailInfo.getMailToDevloper());
                 emailService.sendBatchNotification(jobName, description,
                         success, logContent);
 
-                // 2. 如果有可合併碎片課且用戶郵件不為空，給老師發送提醒
+                // 2. 老师提醒邮件：仅当有可合并碎片课时发送（mergeReport != null）
                 if (mergeReport != null && mailInfo.getEmailToUser() != null
                         && !mailInfo.getEmailToUser().isEmpty()) {
                     emailService.setFromEmail(mailInfo.getEmailFrom());
                     emailService.setToEmails(mailInfo.getEmailToUser());
 
-                    // 替換郵件模板中的日期佔位符
-                    String mailContent = mailInfo.getMailContentForUser();
-                    if (mailContent != null) {
-                        mailContent = mailContent.replace("BASEDATE",
-                                LocalDate.now().format(
-                                        DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                        mailContent = mailContent + "\n\n" + mergeReport;
-                    } else {
-                        mailContent = mergeReport;
-                    }
-
                     emailService.sendBatchNotification(jobName, description,
-                            success, mailContent);
+                            success, mergeReport);
+                    logger.info("老师提醒邮件已发送 - jobName: {}", jobName);
+                } else {
+                    logger.info("无可合并碎片课，跳过老师提醒邮件 - jobName: {}", jobName);
                 }
 
-                logger.info("郵件通知發送完成 - jobName: {}, success: {}",
+                logger.info("邮件通知发送完成 - jobName: {}, success: {}",
                         jobName, success);
             } else {
-                logger.info("郵件服務未啟用，跳過郵件發送 - jobName: {}", jobName);
+                logger.info("邮件服务未启用，跳过邮件发送 - jobName: {}", jobName);
             }
         } catch (Exception e) {
-            logger.error("發送郵件通知時出錯 - jobName: {}, error: {}",
+            logger.error("发送邮件通知时出错 - jobName: {}, error: {}",
                     jobName, e.getMessage(), e);
-            // 不要因為郵件發送失敗而影響批処理任務的狀態
+            // 不要因为邮件发送失败而影响批处理任务的状态
         }
     }
 
@@ -316,22 +306,22 @@ public class KNDB4030Tasklet implements Tasklet {
         long endTime = System.currentTimeMillis();
         long executionTime = endTime - startTime;
 
-        addLog(logContent, "========== " + batchName + " 批処理執行完成 ==========");
-        addLog(logContent, "批処理名稱: " + batchName);
-        addLog(logContent, "執行狀態: " + status);
-        addLog(logContent, "碎片課總数: " + processedCount);
-        addLog(logContent, "可合併整課数: " + mergeableCount);
-        addLog(logContent, "執行時間: " + executionTime + " ms ("
+        addLog(logContent, "========== " + batchName + " 批处理执行完成 ==========");
+        addLog(logContent, "批处理名称: " + batchName);
+        addLog(logContent, "执行状态: " + status);
+        addLog(logContent, "碎片课总数: " + processedCount);
+        addLog(logContent, "可合并整课数: " + mergeableCount);
+        addLog(logContent, "执行时间: " + executionTime + " ms ("
                 + (executionTime / 1000.0) + " 秒)");
-        addLog(logContent, "執行結束時間: " + LocalDateTime.now()
+        addLog(logContent, "执行结束时间: " + LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         addLog(logContent, "================================================");
 
-        logger.info("========== {} 批処理執行完成 ==========", batchName);
-        logger.info("執行狀態: {}", status);
-        logger.info("碎片課總数: {}", processedCount);
-        logger.info("可合併整課数: {}", mergeableCount);
-        logger.info("執行時間: {} ms ({} 秒)", executionTime, executionTime / 1000.0);
+        logger.info("========== {} 批处理执行完成 ==========", batchName);
+        logger.info("执行状态: {}", status);
+        logger.info("碎片课总数: {}", processedCount);
+        logger.info("可合并整课数: {}", mergeableCount);
+        logger.info("执行时间: {} ms ({} 秒)", executionTime, executionTime / 1000.0);
     }
 
     // ========== 内部類: 可合併碎片組 ==========

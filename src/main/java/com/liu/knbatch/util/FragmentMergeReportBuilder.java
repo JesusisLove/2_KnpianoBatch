@@ -4,6 +4,7 @@ import com.liu.knbatch.entity.KNDB4030Entity;
 import com.liu.knbatch.tasklet.KNDB4030Tasklet.MergeableGroup;
 import org.springframework.stereotype.Component;
 
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,8 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * KNDB4030 碎片課合併提醒報告生成器
- * 生成郵件報告内容，展示哪些学生的哪些碎片課可以湊成整課
+ * KNDB4030 碎片课合并提醒报告生成器
+ * 生成邮件报告内容，展示哪些学生的哪些碎片课可以凑成整课
  *
  * @author Liu
  * @version 1.0.0
@@ -22,11 +23,11 @@ import java.util.stream.Collectors;
 public class FragmentMergeReportBuilder {
 
     /**
-     * 構建碎片課合併提醒報告
+     * 构建碎片课合并提醒报告
      *
-     * @param mergeableGroups 可合併碎片組列表
-     * @param baseDate        基準日期（yyyyMMdd）
-     * @return 報告内容
+     * @param mergeableGroups 可合并碎片组列表
+     * @param baseDate        基准日期（yyyyMMdd）
+     * @return 报告内容
      */
     public String buildReport(List<MergeableGroup> mergeableGroups, String baseDate) {
 
@@ -36,11 +37,7 @@ public class FragmentMergeReportBuilder {
         String formattedDate = baseDate.replaceAll(
                 "(\\d{4})(\\d{2})(\\d{2})", "$1-$2-$3");
 
-        // 報告頭
-        sb.append("【零碎課合併提醒】").append(formattedDate).append("\n\n");
-        sb.append("検出到以下学生的零碎課可以湊成整課，請及時処理：\n\n");
-
-        // 按学生+科目聚合（同一学生同一科目可能有多組）
+        // 按学生+科目聚合（同一学生同一科目可能有多组）
         Map<String, List<MergeableGroup>> byStudentSubject =
                 mergeableGroups.stream()
                         .collect(Collectors.groupingBy(
@@ -48,8 +45,18 @@ public class FragmentMergeReportBuilder {
                                 LinkedHashMap::new,
                                 Collectors.toList()));
 
+        // 先统计学生总数，用于报告头
+        long studentCount = mergeableGroups.stream()
+                .map(MergeableGroup::getStuId).distinct().count();
+
+        // 报告头（含学生总数）
+        sb.append("【零碎课合并提醒】").append(formattedDate).append("\n");
+        sb.append("检测到以下").append(studentCount)
+                .append("个学生的零碎课可以凑成整课，请及时处理：\n\n");
+
         int totalLessons = 0;
         Set<String> studentSet = new HashSet<>();
+        int studentIndex = 0;
 
         for (Map.Entry<String, List<MergeableGroup>> entry
                 : byStudentSubject.entrySet()) {
@@ -58,43 +65,47 @@ public class FragmentMergeReportBuilder {
             MergeableGroup first = groups.get(0);
 
             studentSet.add(first.getStuId());
+            studentIndex++;
 
-            // 学生+科目標題
-            sb.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-            sb.append("学生: ").append(first.getStuName());
+            // 学生+科目标题
+            sb.append("━━━━━━━━━━━━━━━━━━━━━━━\n");
+            sb.append(studentIndex).append(". 学生: ").append(first.getStuName());
             sb.append("  科目: ").append(first.getSubjectName());
-            sb.append("  標準課時: ").append(first.getMinutesPerLsn())
-                    .append("分鐘\n");
-            sb.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
+            sb.append("  标准课时: ").append(first.getMinutesPerLsn())
+                    .append("分钟\n");
+            sb.append("━━━━━━━━━━━━━━━━━━━━━━━\n\n");
 
-            // 毎組碎片明細
+            // 每组碎片明细
             for (int i = 0; i < groups.size(); i++) {
                 MergeableGroup group = groups.get(i);
                 totalLessons++;
 
-                sb.append("  ▶ 可湊成第").append(i + 1)
-                        .append("節整課（共").append(group.getFragments().size())
-                        .append("個碎片）:\n");
+                sb.append("  ▶ 可凑成第").append(i + 1)
+                        .append("节整课（共").append(group.getFragments().size())
+                        .append("个碎片）:\n");
 
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
                 int subtotal = 0;
                 for (KNDB4030Entity fragment : group.getFragments()) {
-                    sb.append("    · ").append(fragment.getScanqrDateShort())
-                            .append(" ").append(fragment.getClassDuration())
-                            .append("分鐘\n");
+                    String dateStr = fragment.getScanqrDate() != null
+                            ? fragment.getScanqrDate().format(dtf) : "";
+                    sb.append("    · ").append(dateStr)
+                            .append("  ").append(fragment.getClassDuration())
+                            .append("分钟\n");
                     subtotal += fragment.getClassDuration();
                 }
 
-                sb.append("    合計: ").append(subtotal)
-                        .append("分鐘 = 1節標準課時\n\n");
+                sb.append("    合计: ").append(subtotal)
+                        .append("分钟 = 1节标准课时 ✓\n\n");
             }
         }
 
         int totalStudents = studentSet.size();
 
-        // 報告匯總
-        sb.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-        sb.append("共計: ").append(totalStudents).append("名学生, ")
-                .append(totalLessons).append("節整課可合併\n");
+        // 报告汇总
+        sb.append("━━━━━━━━━━━━━━━━━━━━━━━\n");
+        sb.append("共计: ").append(totalStudents).append("名学生, ")
+                .append(totalLessons).append("节整课可合并\n");
 
         return sb.toString();
     }
