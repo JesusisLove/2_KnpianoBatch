@@ -263,6 +263,12 @@
             color: white;
         }
 
+        .styled-table .btn-run-job:disabled {
+            background: linear-gradient(45deg, #bdbdbd, #9e9e9e);
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         /* 消息样式 */
         .alert-danger {
             background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
@@ -560,7 +566,7 @@
                                     <button class="btn btn-sm btn-run-job ml-1"
                                             th:data-job-id="${job.jobId}"
                                             th:data-job-desc="${job.description}"
-                                            title="手动触发执行此作业"
+                                            th:disabled="${!job.enabled}"
                                             data-toggle="modal" data-target="#runJobModal">
                                         手动执行
                                     </button>
