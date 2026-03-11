@@ -119,18 +119,18 @@ public class KNDB4020Tasklet implements Tasklet {
             addLog(logContent, "检测周期: " + startDate + " ~ " + endDate);
             logger.info("检测周期: {} ~ {}", startDate, endDate);
 
-            // ====== STEP 3: 查询手动排课记录数 ======
-            addLog(logContent, "步骤2: 查询手动排课记录数...");
-            logger.info("步骤2: 查询手动排课记录数...");
+            // ====== STEP 3: 查询既存课记录数 ======
+            addLog(logContent, "步骤2: 查询既存课记录数...");
+            logger.info("步骤2: 查询既存课记录数...");
 
-            int manualCount = kndb4020Dao.countManualLessons(startDate, endDate);
-            addLog(logContent, "手动排课记录数: " + manualCount);
-            logger.info("手动排课记录数: {}", manualCount);
+            int existingCount = kndb4020Dao.countExistingLessons(startDate, endDate);
+            addLog(logContent, "既存课记录数: " + existingCount);
+            logger.info("既存课记录数: {}", existingCount);
 
-            // 无手动排课，直接结束
-            if (manualCount == 0) {
-                addLog(logContent, "无手动排课记录，无碰撞风险，跳过检测");
-                logger.info("无手动排课记录，无碰撞风险，跳过检测");
+            // 无既存课，直接结束
+            if (existingCount == 0) {
+                addLog(logContent, "无既存课记录，无碰撞风险，跳过检测");
+                logger.info("无既存课记录，无碰撞风险，跳过检测");
                 success = true;
                 logExecutionResult(batchName, "SUCCESS", 0, 0, startTime, logContent);
                 return RepeatStatus.FINISHED;
@@ -144,17 +144,19 @@ public class KNDB4020Tasklet implements Tasklet {
             addLog(logContent, "自动排课记录数: " + autoLessons.size());
             logger.info("自动排课记录数: {}", autoLessons.size());
 
-            // ====== STEP 5: 查询手动排课列表 ======
-            addLog(logContent, "步骤4: 查询手动排课列表...");
-            logger.info("步骤4: 查询手动排课列表...");
+            // ====== STEP 5: 查询既存课列表 ======
+            addLog(logContent, "步骤4: 查询既存课列表...");
+            logger.info("步骤4: 查询既存课列表...");
 
-            List<KNDB4020Entity> manualLessons = kndb4020Dao.getManualLessons(startDate, endDate);
+            List<KNDB4020Entity> existingLessons = kndb4020Dao.getExistingLessons(startDate, endDate);
+            addLog(logContent, "既存课记录数: " + existingLessons.size());
+            logger.info("既存课记录数: {}", existingLessons.size());
 
             // ====== STEP 6: 执行碰撞检测 ======
             addLog(logContent, "步骤5: 执行碰撞检测...");
             logger.info("步骤5: 执行碰撞检测...");
 
-            List<CollisionResult> collisions = detectCollisions(autoLessons, manualLessons);
+            List<CollisionResult> collisions = detectCollisions(autoLessons, existingLessons);
             collisionCount = collisions.size();
 
             addLog(logContent, "检测到碰撞数: " + collisionCount);
@@ -186,7 +188,7 @@ public class KNDB4020Tasklet implements Tasklet {
             }
 
             success = true;
-            logExecutionResult(batchName, "SUCCESS", autoLessons.size() + manualLessons.size(), collisionCount, startTime, logContent);
+            logExecutionResult(batchName, "SUCCESS", autoLessons.size() + existingLessons.size(), collisionCount, startTime, logContent);
 
             // 发送邮件（在finally之前，因为这里可以区分是否有碰撞报告）
             sendEmailNotification(batchName, description, success, logContent.toString(), collisionReport);
@@ -210,18 +212,18 @@ public class KNDB4020Tasklet implements Tasklet {
     /**
      * 执行碰撞检测
      *
-     * @param autoLessons   自动排课列表
-     * @param manualLessons 手动排课列表
+     * @param autoLessons     自动排课列表
+     * @param existingLessons 既存课列表（手动排课 + 调课进来的课）
      * @return 碰撞结果列表
      */
     private List<CollisionResult> detectCollisions(List<KNDB4020Entity> autoLessons,
-                                                    List<KNDB4020Entity> manualLessons) {
+                                                    List<KNDB4020Entity> existingLessons) {
         List<CollisionResult> collisions = new ArrayList<>();
 
         for (KNDB4020Entity auto : autoLessons) {
-            for (KNDB4020Entity manual : manualLessons) {
+            for (KNDB4020Entity existing : existingLessons) {
                 // 检测碰撞
-                CollisionResult result = checkCollision(auto, manual);
+                CollisionResult result = checkCollision(auto, existing);
                 if (result != null) {
                     collisions.add(result);
                 }
@@ -232,60 +234,60 @@ public class KNDB4020Tasklet implements Tasklet {
     }
 
     /**
-     * 检测两节课是否碰撞
+     * 检测两节课是否碰撞（使用有效时间 = COALESCE(lsn_adjusted_date, schedual_date)）
      *
-     * @param auto   自动排课
-     * @param manual 手动排课
+     * @param auto     自动排课
+     * @param existing 既存课（手动排课或调课进来的课）
      * @return 碰撞结果，若无碰撞返回null
      */
-    private CollisionResult checkCollision(KNDB4020Entity auto, KNDB4020Entity manual) {
-        // 获取时间信息
-        LocalDateTime autoStart = auto.getSchedualDateTime();
-        LocalDateTime autoEnd = auto.getEndDateTime();
-        LocalDateTime manualStart = manual.getSchedualDateTime();
-        LocalDateTime manualEnd = manual.getEndDateTime();
+    private CollisionResult checkCollision(KNDB4020Entity auto, KNDB4020Entity existing) {
+        // 使用有效时间（调课日期优先）
+        LocalDateTime autoStart = auto.getEffectiveDateTime();
+        LocalDateTime autoEnd = auto.getEffectiveEndDateTime();
+        LocalDateTime existingStart = existing.getEffectiveDateTime();
+        LocalDateTime existingEnd = existing.getEffectiveEndDateTime();
 
-        if (autoStart == null || manualStart == null) {
+        if (autoStart == null || existingStart == null) {
             return null;
         }
 
-        // 判断日期是否相同
-        if (!autoStart.toLocalDate().equals(manualStart.toLocalDate())) {
+        // 判断日期是否相同（使用有效时间的日期）
+        if (!autoStart.toLocalDate().equals(existingStart.toLocalDate())) {
             return null; // 不同日期，无碰撞
         }
 
         // ====== STEP 1: 判断是否部分重叠 ======
-        if (isPartialOverlap(autoStart, autoEnd, manualStart, manualEnd)) {
-            int overlapMinutes = calculateOverlapMinutes(autoStart, autoEnd, manualStart, manualEnd);
+        if (isPartialOverlap(autoStart, autoEnd, existingStart, existingEnd)) {
+            int overlapMinutes = calculateOverlapMinutes(autoStart, autoEnd, existingStart, existingEnd);
             return CollisionResult.builder()
                     .autoLesson(auto)
-                    .manualLesson(manual)
+                    .manualLesson(existing)
                     .collisionType(CollisionType.PARTIAL_OVERLAP)
                     .overlapMinutes(overlapMinutes)
                     .build();
         }
 
         // ====== STEP 2: 判断开始时刻是否相同 ======
-        if (!autoStart.toLocalTime().equals(manualStart.toLocalTime())) {
+        if (!autoStart.toLocalTime().equals(existingStart.toLocalTime())) {
             return null; // 开始时刻不同且无部分重叠，无碰撞
         }
 
         // ====== STEP 3: 判断课时是否相同 ======
-        if (!auto.getClassDuration().equals(manual.getClassDuration())) {
-            int overlapMinutes = Math.min(auto.getClassDuration(), manual.getClassDuration());
+        if (!auto.getClassDuration().equals(existing.getClassDuration())) {
+            int overlapMinutes = Math.min(auto.getClassDuration(), existing.getClassDuration());
             return CollisionResult.builder()
                     .autoLesson(auto)
-                    .manualLesson(manual)
+                    .manualLesson(existing)
                     .collisionType(CollisionType.DURATION_DIFFERENT)
                     .overlapMinutes(overlapMinutes)
                     .build();
         }
 
         // ====== STEP 4: 判断科目是否相同 ======
-        if (!auto.getSubjectId().equals(manual.getSubjectId())) {
+        if (!auto.getSubjectId().equals(existing.getSubjectId())) {
             return CollisionResult.builder()
                     .autoLesson(auto)
-                    .manualLesson(manual)
+                    .manualLesson(existing)
                     .collisionType(CollisionType.SUBJECT_DIFFERENT)
                     .overlapMinutes(auto.getClassDuration())
                     .build();

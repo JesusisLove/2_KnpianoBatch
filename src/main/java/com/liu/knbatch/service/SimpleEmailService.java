@@ -156,8 +156,6 @@ public class SimpleEmailService {
         String env = deployEnvironment.toLowerCase().trim();
         return "production".equals(env) ||
                "生产环境".equals(deployEnvironment) ||
-               "测试環境".equals(deployEnvironment) ||
-               "开发环境".equals(deployEnvironment) ||
                "prod".equals(env);
     }
 }

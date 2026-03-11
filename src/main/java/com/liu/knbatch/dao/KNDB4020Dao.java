@@ -25,29 +25,30 @@ public interface KNDB4020Dao {
     Map<String, String> getWeekRange(@Param("baseDate") String baseDate);
 
     /**
-     * 统计手动排课记录数
+     * 统计既存课记录数（有效时间在本周内，排除本周新生成的自动排课）
+     * 既存课 = 手动排课 + 调课进来的课（含从其他周调课到本周的记录）
      * @param startDate 开始日期 (yyyy-MM-dd)
      * @param endDate 结束日期 (yyyy-MM-dd)
      * @return 记录数
      */
-    int countManualLessons(@Param("startDate") String startDate,
-                           @Param("endDate") String endDate);
+    int countExistingLessons(@Param("startDate") String startDate,
+                              @Param("endDate") String endDate);
 
     /**
-     * 查询自动排课列表
+     * 查询自动排课列表（本周新生成的，schedual_type=1 且未被调课）
      * @param startDate 开始日期 (yyyy-MM-dd)
      * @param endDate 结束日期 (yyyy-MM-dd)
-     * @return 自动排课列表 (schedual_type = 1)
+     * @return 自动排课列表
      */
     List<KNDB4020Entity> getAutoLessons(@Param("startDate") String startDate,
                                          @Param("endDate") String endDate);
 
     /**
-     * 查询手动排课列表
+     * 查询既存课列表（碰撞检测对象：手动排课 + 调课进来的课，排除本周新自动排课）
      * @param startDate 开始日期 (yyyy-MM-dd)
      * @param endDate 结束日期 (yyyy-MM-dd)
-     * @return 手动排课列表 (schedual_type = 0)
+     * @return 既存课列表
      */
-    List<KNDB4020Entity> getManualLessons(@Param("startDate") String startDate,
-                                           @Param("endDate") String endDate);
+    List<KNDB4020Entity> getExistingLessons(@Param("startDate") String startDate,
+                                             @Param("endDate") String endDate);
 }

@@ -61,6 +61,7 @@
         INNER JOIN t_batch_job_config JOB
         ON MAIL.job_id = JOB.job_id
         WHERE MAIL.job_id = #{jobId}
+        LIMIT 1
     </select>
 
     <!-- 插入邮件配置信息 -->

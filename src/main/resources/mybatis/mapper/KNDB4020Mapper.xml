@@ -12,6 +12,7 @@
         <result property="subjectName" column="subject_name"/>
         <result property="subjectSubName" column="subject_sub_name"/>
         <result property="schedualDateTime" column="schedual_date"/>
+        <result property="lsnAdjustedDate" column="lsn_adjusted_date"/>
         <result property="classDuration" column="class_duration"/>
         <result property="schedualType" column="schedual_type"/>
     </resultMap>
@@ -27,16 +28,22 @@
         LIMIT 1
     </select>
 
-    <!-- 统计手动排课记录数 -->
-    <select id="countManualLessons" resultType="int">
+    <!-- 统计既存课记录数（有效时间在本周内，排除本周新生成的自动排课） -->
+    <!-- 既存课 = 手动排课 + 调课进来的课（包括从其他周调课到本周的记录） -->
+    <select id="countExistingLessons" resultType="int">
         SELECT COUNT(*)
         FROM t_info_lesson l
-        WHERE l.schedual_type = 0
-        AND DATE(l.schedual_date) BETWEEN #{startDate} AND #{endDate}
+        WHERE DATE(COALESCE(l.lsn_adjusted_date, l.schedual_date))
+              BETWEEN #{startDate} AND #{endDate}
         AND l.del_flg = 0
+        AND NOT (
+            l.schedual_type = 1
+            AND DATE(l.schedual_date) BETWEEN #{startDate} AND #{endDate}
+            AND l.lsn_adjusted_date IS NULL
+        )
     </select>
 
-    <!-- 查询自动排课列表 (schedual_type = 1) -->
+    <!-- 查询自动排课列表（本周新生成的，schedual_type=1 且未被调课） -->
     <select id="getAutoLessons" resultMap="KNDB4020EntityMap">
         SELECT
             l.lesson_id,
@@ -46,20 +53,23 @@
             sub.subject_name,
             COALESCE(subsub.subject_sub_name, '') as subject_sub_name,
             l.schedual_date,
+            l.lsn_adjusted_date,
             l.class_duration,
             l.schedual_type
         FROM t_info_lesson l
-        LEFT JOIN t_info_student s ON l.stu_id = s.stu_id
-        LEFT JOIN t_info_subject sub ON l.subject_id = sub.subject_id
-        LEFT JOIN t_info_subject_sub subsub ON l.subject_sub_id = subsub.subject_sub_id
+        LEFT JOIN t_mst_student s ON l.stu_id = s.stu_id
+        LEFT JOIN t_mst_subject sub ON l.subject_id = sub.subject_id
+        LEFT JOIN t_info_subject_edaban subsub ON l.subject_id = subsub.subject_id AND l.subject_sub_id = subsub.subject_sub_id
         WHERE l.schedual_type = 1
         AND DATE(l.schedual_date) BETWEEN #{startDate} AND #{endDate}
+        AND l.lsn_adjusted_date IS NULL
         AND l.del_flg = 0
         ORDER BY l.schedual_date
     </select>
 
-    <!-- 查询手动排课列表 (schedual_type = 0) -->
-    <select id="getManualLessons" resultMap="KNDB4020EntityMap">
+    <!-- 查询既存课列表（自动排课的碰撞检测对象） -->
+    <!-- 既存课 = 有效时间（调课优先）在本周内，且排除本周新生成的自动排课本身 -->
+    <select id="getExistingLessons" resultMap="KNDB4020EntityMap">
         SELECT
             l.lesson_id,
             l.stu_id,
@@ -68,16 +78,22 @@
             sub.subject_name,
             COALESCE(subsub.subject_sub_name, '') as subject_sub_name,
             l.schedual_date,
+            l.lsn_adjusted_date,
             l.class_duration,
             l.schedual_type
         FROM t_info_lesson l
-        LEFT JOIN t_info_student s ON l.stu_id = s.stu_id
-        LEFT JOIN t_info_subject sub ON l.subject_id = sub.subject_id
-        LEFT JOIN t_info_subject_sub subsub ON l.subject_sub_id = subsub.subject_sub_id
-        WHERE l.schedual_type = 0
-        AND DATE(l.schedual_date) BETWEEN #{startDate} AND #{endDate}
+        LEFT JOIN t_mst_student s ON l.stu_id = s.stu_id
+        LEFT JOIN t_mst_subject sub ON l.subject_id = sub.subject_id
+        LEFT JOIN t_info_subject_edaban subsub ON l.subject_id = subsub.subject_id AND l.subject_sub_id = subsub.subject_sub_id
+        WHERE DATE(COALESCE(l.lsn_adjusted_date, l.schedual_date))
+              BETWEEN #{startDate} AND #{endDate}
         AND l.del_flg = 0
-        ORDER BY l.schedual_date
+        AND NOT (
+            l.schedual_type = 1
+            AND DATE(l.schedual_date) BETWEEN #{startDate} AND #{endDate}
+            AND l.lsn_adjusted_date IS NULL
+        )
+        ORDER BY COALESCE(l.lsn_adjusted_date, l.schedual_date)
     </select>
 
 </mapper>

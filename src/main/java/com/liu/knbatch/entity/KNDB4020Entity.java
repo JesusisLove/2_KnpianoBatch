@@ -30,8 +30,11 @@ public class KNDB4020Entity {
     /** 子科目名称 */
     private String subjectSubName;
 
-    /** 排课日期时间 */
+    /** 排课日期时间（原计划时间） */
     private LocalDateTime schedualDateTime;
+
+    /** 调课后的实际上课时间（非空时优先使用此时间） */
+    private LocalDateTime lsnAdjustedDate;
 
     /** 课时长度（分钟） */
     private Integer classDuration;
@@ -97,6 +100,14 @@ public class KNDB4020Entity {
         this.schedualDateTime = schedualDateTime;
     }
 
+    public LocalDateTime getLsnAdjustedDate() {
+        return lsnAdjustedDate;
+    }
+
+    public void setLsnAdjustedDate(LocalDateTime lsnAdjustedDate) {
+        this.lsnAdjustedDate = lsnAdjustedDate;
+    }
+
     public Integer getClassDuration() {
         return classDuration;
     }
@@ -116,30 +127,47 @@ public class KNDB4020Entity {
     // ========== 工具方法 ==========
 
     /**
-     * 获取格式化的开始时间字符串 (HH:mm)
+     * 获取有效上课时间 = COALESCE(lsn_adjusted_date, schedual_date)
+     * 调课日期非空时使用调课日期，否则使用原计划日期
      */
-    public String getTimeString() {
-        if (schedualDateTime == null) {
-            return "";
-        }
-        return schedualDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+    public LocalDateTime getEffectiveDateTime() {
+        return lsnAdjustedDate != null ? lsnAdjustedDate : schedualDateTime;
     }
 
     /**
-     * 获取结束时间
+     * 获取有效结束时间 = getEffectiveDateTime() + classDuration
      */
-    public LocalDateTime getEndDateTime() {
-        if (schedualDateTime == null || classDuration == null) {
+    public LocalDateTime getEffectiveEndDateTime() {
+        LocalDateTime effective = getEffectiveDateTime();
+        if (effective == null || classDuration == null) {
             return null;
         }
-        return schedualDateTime.plusMinutes(classDuration);
+        return effective.plusMinutes(classDuration);
     }
 
     /**
-     * 获取格式化的结束时间字符串 (HH:mm)
+     * 获取格式化的有效开始时间字符串 (HH:mm)
+     */
+    public String getTimeString() {
+        LocalDateTime effective = getEffectiveDateTime();
+        if (effective == null) {
+            return "";
+        }
+        return effective.format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
+    /**
+     * 获取有效结束时间（兼容旧代码，内部改用有效时间计算）
+     */
+    public LocalDateTime getEndDateTime() {
+        return getEffectiveEndDateTime();
+    }
+
+    /**
+     * 获取格式化的有效结束时间字符串 (HH:mm)
      */
     public String getEndTimeString() {
-        LocalDateTime endTime = getEndDateTime();
+        LocalDateTime endTime = getEffectiveEndDateTime();
         if (endTime == null) {
             return "";
         }
@@ -147,13 +175,14 @@ public class KNDB4020Entity {
     }
 
     /**
-     * 获取格式化的日期字符串 (yyyy-MM-dd)
+     * 获取格式化的有效日期字符串 (yyyy-MM-dd)
      */
     public String getDateString() {
-        if (schedualDateTime == null) {
+        LocalDateTime effective = getEffectiveDateTime();
+        if (effective == null) {
             return "";
         }
-        return schedualDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        return effective.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
 
     @Override
@@ -165,6 +194,7 @@ public class KNDB4020Entity {
                 ", subjectId='" + subjectId + '\'' +
                 ", subjectName='" + subjectName + '\'' +
                 ", schedualDateTime=" + schedualDateTime +
+                ", lsnAdjustedDate=" + lsnAdjustedDate +
                 ", classDuration=" + classDuration +
                 ", schedualType=" + schedualType +
                 '}';
