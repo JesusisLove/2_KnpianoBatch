@@ -566,8 +566,7 @@
                                     <button class="btn btn-sm btn-run-job ml-1"
                                             th:data-job-id="${job.jobId}"
                                             th:data-job-desc="${job.description}"
-                                            th:disabled="${!job.enabled}"
-                                            data-toggle="modal" data-target="#runJobModal">
+                                            th:disabled="${!job.enabled}">
                                         手动执行
                                     </button>
                                 </td>
@@ -649,15 +648,24 @@
             });
 
 
-            // 立即执行按钮 - 打开 Modal 时记录 jobId
+            // 立即执行按钮
             $(document).on('click', '.btn-run-job', function() {
                 var jobId = $(this).data('job-id');
                 var jobDesc = $(this).data('job-desc');
+
+                // 有专用画面的作业，直接跳转
+                if (jobId === 'KNDB2040') {
+                    window.location.href = '/kndb2040';
+                    return;
+                }
+
+                // 其他作业：手动打开 Modal
                 $('#runJobModal').data('job-id', jobId);
                 $('#modalJobDesc').text(jobId + ' - ' + jobDesc);
                 $('#modalBaseDate').val('');
                 $('#runJobResult').hide().html('');
                 $('#btnConfirmRun').prop('disabled', false).text('确认执行');
+                $('#runJobModal').modal('show');
             });
 
             // 确认执行

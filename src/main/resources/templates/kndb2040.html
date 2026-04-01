@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>KNDB2040 学生指定月课费金额修正</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .main-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            font-weight: bold;
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .readonly-field {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 6px 12px;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+        }
+
+        .monthly-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            white-space: nowrap;
+            padding: 0 6px;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-execute {
+            background: linear-gradient(45deg, #f7971e, #ffd200);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 40px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .btn-execute:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(247, 151, 30, 0.4);
+        }
+
+        .btn-execute:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .section-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .divider {
+            border-top: 1px dashed #ccc;
+            margin: 1.5rem 0;
+        }
+
+        .price-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .price-unit {
+            flex: 0 0 120px;
+        }
+
+        .price-monthly {
+            flex: 0 0 130px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-header">
+        <div class="container">
+            <h2>KNDB2040 学生指定月课费金额修正</h2>
+            <p class="mb-0">修正因忘记更新学生档案子科目而产生的错误课费金额</p>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- 执行结果消息（AJAX 动态填充） -->
+        <div id="resultAlert" class="alert alert-dismissible fade show d-none" role="alert">
+            <strong id="resultTitle"></strong> <span id="resultMessage"></span>
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">修正参数输入</h5>
+            </div>
+            <div class="card-body">
+                <form id="kndb2040Form">
+
+                    <!-- 学生 -->
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label section-label">学生</label>
+                        <div class="col-sm-6">
+                            <select id="stuId" name="stuId" class="form-control">
+                                <option value="">── 请选择学生 ──</option>
+                                <option th:each="stu : ${studentList}"
+                                        th:value="${stu.stuId}"
+                                        th:text="${stu.stuId} + ' ' + ${stu.stuName}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 科目 -->
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label section-label">科目</label>
+                        <div class="col-sm-6">
+                            <select id="subjectId" name="subjectId" class="form-control" disabled>
+                                <option value="">── 请选择科目 ──</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- 当前子科目信息（只读） -->
+                    <p class="section-label text-muted">当前子科目信息</p>
+
+                    <input type="hidden" id="currentSubjectSubId" name="currentSubjectSubId" value="">
+
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label section-label">当前子科目</label>
+                        <div class="col-sm-6">
+                            <div class="readonly-field" id="currentSubName">──</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label section-label">当前标准价格</label>
+                        <div class="col-sm-8">
+                            <div class="price-group">
+                                <div class="price-monthly">
+                                    <div class="readonly-field" id="currentLessonFeeMonthly">──</div>
+                                </div>
+                                <span class="monthly-label">单价:</span>
+                                <div class="price-unit">
+                                    <div class="readonly-field" id="currentLessonFee">──</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label section-label">当前调整价格</label>
+                        <div class="col-sm-8">
+                            <div class="price-group">
+                                <div class="price-monthly">
+                                    <div class="readonly-field" id="currentLessonFeeAdjustedMonthly">──</div>
+                                </div>
+                                <span class="monthly-label">单价:</span>
+                                <div class="price-unit">
+                                    <div class="readonly-field" id="currentLessonFeeAdjusted">──</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- 升级后子科目信息 -->
+                    <p class="section-label text-muted">升级后子科目信息</p>
+
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label section-label">升级后子科目</label>
+                        <div class="col-sm-6">
+                            <select id="newSubjectSubId" name="newSubjectSubId" class="form-control" disabled>
+                                <option value="">── 请先选择学生和科目 ──</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label section-label">升级后标准价格</label>
+                        <div class="col-sm-8">
+                            <div class="price-group">
+                                <div class="price-monthly">
+                                    <div class="readonly-field" id="newLessonFeeMonthly">──</div>
+                                </div>
+                                <span class="monthly-label">单价:</span>
+                                <div class="price-unit">
+                                    <div class="readonly-field" id="newLessonFeeDisplay">──</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label section-label">升级后调整价格</label>
+                        <div class="col-sm-8">
+                            <div class="price-group">
+                                <div class="price-monthly">
+                                    <input type="text" id="newLessonFeeAdjustedMonthly"
+                                           class="form-control" placeholder="月课费（选填）" disabled>
+                                </div>
+                                <span class="monthly-label">单价:</span>
+                                <div class="price-unit">
+                                    <input type="text" id="newLessonFeeAdjustedInput" name="newLessonFeeAdjusted"
+                                           class="form-control" placeholder="单价（选填）" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 隐藏字段：标准价格（提交用） -->
+                    <input type="hidden" id="newLessonFee" name="newLessonFee" value="0">
+
+                    <div class="divider"></div>
+
+                    <!-- 起价年月 -->
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label section-label">起价年月</label>
+                        <div class="col-sm-3">
+                            <select id="startYear" name="startYear" class="form-control">
+                                <option th:each="y : ${#numbers.sequence(currentYear - 2, currentYear + 1)}"
+                                        th:value="${y}"
+                                        th:text="${y} + '年'"
+                                        th:selected="${y == currentYear}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <select id="startMonth" name="startMonth" class="form-control">
+                                <option th:each="m : ${#numbers.sequence(1, 12)}"
+                                        th:value="${m}"
+                                        th:text="${m} + '月'"
+                                        th:selected="${m == currentMonth}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- 执行按钮 -->
+                    <div class="form-group row">
+                        <div class="col-sm-12 text-center">
+                            <button type="button" id="btnExecute" class="btn btn-execute" disabled>
+                                执行修正
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- 返回主页 -->
+        <div class="text-center mb-4">
+            <a href="/batch/job" class="btn btn-outline-secondary">返回作业列表</a>
+        </div>
+
+    </div>
+
+    <!-- 确认执行 Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="border-radius: 12px; overflow: hidden;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #f7971e, #ffd200);">
+                    <h5 class="modal-title font-weight-bold" id="confirmModalLabel">确认执行修正</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">此操作将修改学生档案和课费数据，请确认参数无误后执行。</p>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                            <tr>
+                                <th class="bg-light" style="width: 35%;">学生</th>
+                                <td id="confirmStuId"></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">科目</th>
+                                <td id="confirmSubjectId"></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">升级后子科目</th>
+                                <td id="confirmNewSubId"></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">起价年月</th>
+                                <td id="confirmStartYearMonth"></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">实际使用单价</th>
+                                <td id="confirmUnitPrice"></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">月课费</th>
+                                <td id="confirmMonthlyFee"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" id="btnConfirmExecute" class="btn btn-warning font-weight-bold">确认执行</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ===== 选择学生 → 取科目列表 =====
+        $('#stuId').change(function () {
+            var stuId = $(this).val();
+
+            resetSubjectSection();
+            resetCurrentSubSection();
+            resetNewSubSection();
+            checkExecuteButton();
+
+            if (!stuId) {
+                $('#subjectId').prop('disabled', true);
+                return;
+            }
+
+            $.get('/kndb2040/subjects', { stuId: stuId }, function (data) {
+                var $select = $('#subjectId').empty().append('<option value="">── 请选择科目 ──</option>');
+                $.each(data, function (i, item) {
+                    $select.append($('<option>').val(item.subjectId).text(item.subjectId + ' ' + item.subjectName));
+                });
+                $select.prop('disabled', false);
+            }).fail(function () {
+                alert('取得科目列表失败，请重试。');
+            });
+        });
+
+        // ===== 选择科目 → 取当前子科目信息 + 升级候补列表 =====
+        $('#subjectId').change(function () {
+            var stuId = $('#stuId').val();
+            var subjectId = $(this).val();
+
+            resetCurrentSubSection();
+            resetNewSubSection();
+            checkExecuteButton();
+
+            if (!subjectId) {
+                return;
+            }
+
+            $.get('/kndb2040/currentSubInfo', { stuId: stuId, subjectId: subjectId }, function (data) {
+                if (!data) {
+                    alert('未找到该学生的当前子科目信息。');
+                    return;
+                }
+                $('#currentSubjectSubId').val(data.currentSubjectSubId);
+                $('#currentSubName').text(data.currentSubjectSubName || '──');
+
+                var fee = data.currentLessonFee;
+                if (fee != null && fee > 0) {
+                    $('#currentLessonFee').text(fee + '');
+                    $('#currentLessonFeeMonthly').text((fee * 4) + '');
+                } else {
+                    $('#currentLessonFee').text('──');
+                    $('#currentLessonFeeMonthly').text('──');
+                }
+
+                var adjFee = data.currentLessonFeeAdjusted;
+                if (adjFee != null && adjFee > 0) {
+                    $('#currentLessonFeeAdjusted').text(adjFee + '');
+                    $('#currentLessonFeeAdjustedMonthly').text((adjFee * 4) + '');
+                } else {
+                    $('#currentLessonFeeAdjusted').text('未设定');
+                    $('#currentLessonFeeAdjustedMonthly').text('──');
+                }
+
+                // 取升级候补子科目列表
+                $.get('/kndb2040/subEdaList',
+                    { subjectId: subjectId, currentSubjectSubId: data.currentSubjectSubId },
+                    function (edaList) {
+                        var $select = $('#newSubjectSubId').empty()
+                            .append('<option value="">── 请选择升级后子科目 ──</option>');
+                        if (edaList.length === 0) {
+                            $select.append('<option value="" disabled>（无可升级的子科目）</option>');
+                        } else {
+                            $.each(edaList, function (i, item) {
+                                $select.append($('<option>').val(item.subjectSubId)
+                                    .text(item.subjectSubName + '（标准价格：' + item.subjectPrice + '）')
+                                    .data('price', item.subjectPrice));
+                            });
+                        }
+                        $select.prop('disabled', false);
+                    }).fail(function () {
+                    alert('取得升级候补列表失败，请重试。');
+                });
+            }).fail(function () {
+                alert('取得当前子科目信息失败，请重试。');
+            });
+        });
+
+        // ===== 选择升级后子科目 → 取标准价格 =====
+        $('#newSubjectSubId').change(function () {
+            var subjectId = $('#subjectId').val();
+            var subjectSubId = $(this).val();
+
+            $('#newLessonFeeDisplay').text('──');
+            $('#newLessonFeeMonthly').text('──');
+            $('#newLessonFee').val('0');
+            $('#newLessonFeeAdjustedInput').val('').prop('disabled', true);
+            $('#newLessonFeeAdjustedMonthly').val('').prop('disabled', true);
+            checkExecuteButton();
+
+            if (!subjectSubId) {
+                return;
+            }
+
+            $.get('/kndb2040/subPrice', { subjectId: subjectId, subjectSubId: subjectSubId }, function (data) {
+                if (data && data.subjectPrice != null) {
+                    var price = data.subjectPrice;
+                    $('#newLessonFeeDisplay').text(price + '');
+                    $('#newLessonFeeMonthly').text((price * 4) + '');
+                    $('#newLessonFee').val(price);
+                }
+                $('#newLessonFeeAdjustedInput').prop('disabled', false);
+                $('#newLessonFeeAdjustedMonthly').prop('disabled', false);
+                checkExecuteButton();
+            }).fail(function () {
+                alert('取得标准价格失败，请重试。');
+            });
+        });
+
+        // ===== 升级后调整价格：单价 ↔ 月课费 双向联动 =====
+        $('#newLessonFeeAdjustedInput').on('input', function () {
+            var val = $(this).val().trim();
+            if (val === '') {
+                $('#newLessonFeeAdjustedMonthly').val('');
+                return;
+            }
+            var unit = parseFloat(val);
+            if (!isNaN(unit) && unit >= 0) {
+                $('#newLessonFeeAdjustedMonthly').val(unit * 4);
+            } else {
+                $('#newLessonFeeAdjustedMonthly').val('');
+            }
+        });
+
+        $('#newLessonFeeAdjustedMonthly').on('input', function () {
+            var val = $(this).val().trim();
+            if (val === '') {
+                $('#newLessonFeeAdjustedInput').val('');
+                return;
+            }
+            var monthly = parseFloat(val);
+            if (!isNaN(monthly) && monthly >= 0) {
+                $('#newLessonFeeAdjustedInput').val(monthly / 4);
+            } else {
+                $('#newLessonFeeAdjustedInput').val('');
+            }
+        });
+
+        // ===== 执行按钮点击 → 显示确认 Modal =====
+        $('#btnExecute').click(function () {
+            if (!$('#stuId').val() || !$('#subjectId').val() || !$('#newSubjectSubId').val()) {
+                alert('请选择学生、科目、升级后子科目。');
+                return false;
+            }
+            var adj = $('#newLessonFeeAdjustedInput').val().trim();
+            if (adj !== '' && (!/^\d+(\.\d+)?$/.test(adj) || parseFloat(adj) < 0)) {
+                alert('升级后调整价格请输入半角数字（非负数）。');
+                return false;
+            }
+
+            // 计算实际使用价格
+            var adjVal = (adj !== '') ? parseFloat(adj) : 0;
+            var stdPrice = parseFloat($('#newLessonFee').val()) || 0;
+            var effectiveUnit = (adjVal > 0) ? adjVal : stdPrice;
+            var effectiveMonthly = effectiveUnit * 4;
+
+            // 填充确认 Modal
+            $('#confirmStuId').text($('#stuId option:selected').text());
+            $('#confirmSubjectId').text($('#subjectId option:selected').text());
+            $('#confirmNewSubId').text($('#newSubjectSubId option:selected').text().replace(/（标准价格.*）$/, '').trim());
+            $('#confirmStartYearMonth').text($('#startYear').val() + '年 ' + $('#startMonth').val() + '月');
+            $('#confirmUnitPrice').text(effectiveUnit + '');
+            $('#confirmMonthlyFee').text(effectiveMonthly + '');
+
+            $('#confirmModal').modal('show');
+        });
+
+        // ===== 确认执行 → AJAX 提交 =====
+        $('#btnConfirmExecute').click(function () {
+            $('#confirmModal').modal('hide');
+
+            // 执行前保存学生姓名（reset 后无法再取）
+            var stuName = $('#stuId option:selected').text();
+
+            var $btn = $('#btnExecute');
+            $btn.prop('disabled', true).text('正在执行...');
+
+            $.ajax({
+                url: '/kndb2040/execute',
+                type: 'POST',
+                data: {
+                    stuId: $('#stuId').val(),
+                    subjectId: $('#subjectId').val(),
+                    currentSubjectSubId: $('#currentSubjectSubId').val(),
+                    newSubjectSubId: $('#newSubjectSubId').val(),
+                    newLessonFee: $('#newLessonFee').val(),
+                    newLessonFeeAdjusted: $('#newLessonFeeAdjustedInput').val().trim() || '0',
+                    startYear: $('#startYear').val(),
+                    startMonth: $('#startMonth').val()
+                },
+                success: function (data) {
+                    if (data.success) {
+                        showResult('success', '执行成功', '【' + stuName + '】 ' + data.message);
+                    } else {
+                        showResult('danger', '执行失败', '【' + stuName + '】 ' + data.message);
+                    }
+                },
+                error: function () {
+                    showResult('danger', '执行失败', '【' + stuName + '】 网络错误，请重试。');
+                },
+                complete: function () {
+                    // 画面初期化（为下一个学生的修正做准备）
+                    $('#stuId').val('');
+                    resetSubjectSection();
+                    resetCurrentSubSection();
+                    resetNewSubSection();
+                    checkExecuteButton();
+                }
+            });
+        });
+
+        // ===== 辅助函数 =====
+        function showResult(type, title, message) {
+            var $alert = $('#resultAlert');
+            $alert.removeClass('alert-success alert-danger d-none').addClass('alert-' + type);
+            $('#resultTitle').text(title + '：');
+            $('#resultMessage').text(message);
+            $('html, body').animate({ scrollTop: 0 }, 400);
+        }
+
+        function resetSubjectSection() {
+            $('#subjectId').empty().append('<option value="">── 请选择科目 ──</option>').prop('disabled', true);
+        }
+
+        function resetCurrentSubSection() {
+            $('#currentSubjectSubId').val('');
+            $('#currentSubName').text('──');
+            $('#currentLessonFee').text('──');
+            $('#currentLessonFeeMonthly').text('──');
+            $('#currentLessonFeeAdjusted').text('──');
+            $('#currentLessonFeeAdjustedMonthly').text('──');
+        }
+
+        function resetNewSubSection() {
+            $('#newSubjectSubId').empty()
+                .append('<option value="">── 请先选择学生和科目 ──</option>')
+                .prop('disabled', true);
+            $('#newLessonFeeDisplay').text('──');
+            $('#newLessonFeeMonthly').text('──');
+            $('#newLessonFee').val('0');
+            $('#newLessonFeeAdjustedInput').val('').prop('disabled', true);
+            $('#newLessonFeeAdjustedMonthly').val('').prop('disabled', true);
+        }
+
+        function checkExecuteButton() {
+            var ok = $('#stuId').val() && $('#subjectId').val() && $('#newSubjectSubId').val();
+            $('#btnExecute').prop('disabled', !ok);
+        }
+    </script>
+</body>
+
+</html>
