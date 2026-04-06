@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.liu.knbatch.dao.KNDB2050Dao">
+
+    <!-- 在课学生列表（画面初期表示用） -->
+    <select id="getActiveStudentList" resultType="map">
+        SELECT stu_id   AS stuId,
+               stu_name AS stuName
+        FROM t_mst_student
+        WHERE del_flg = 0
+        ORDER BY stu_name
+    </select>
+
+    <!-- 学生正在学习的科目列表（画面科目下拉联动用） -->
+    <select id="getSubjectListByStuId" resultType="map">
+        SELECT DISTINCT subject_id   AS subjectId,
+                        subject_name AS subjectName
+        FROM v_latest_subject_info_from_student_document
+        WHERE stu_id = #{stuId}
+        ORDER BY subject_id
+    </select>
+
+    <!--
+        取得执行对象课程列表（Tasklet / 预览 共用）
+        条件：lessonType=1（计划课）+ 已签到（scanqr_date IS NOT NULL）
+              + 指定学生/科目/年月 + 课费记录存在（del_flg=0）
+    -->
+    <select id="getTargetLessonList" resultType="com.liu.knbatch.entity.KNDB2050Entity">
+        SELECT
+            lsn.lesson_id     AS lessonId,
+            fee.lsn_fee_id    AS lsnFeeId,
+            lsn.lesson_type   AS lessonType,
+            lsn.stu_id        AS stuId,
+            lsn.subject_id    AS subjectId,
+            lsn.schedual_date AS schedualDate,
+            mst.stu_name      AS stuName
+        FROM t_info_lesson lsn
+        INNER JOIN t_info_lesson_fee fee ON lsn.lesson_id = fee.lesson_id
+        INNER JOIN t_mst_student     mst ON lsn.stu_id    = mst.stu_id
+        WHERE lsn.stu_id      = #{stuId}
+          AND lsn.subject_id  = #{subjectId}
+          AND lsn.lesson_type = 1
+          AND lsn.scanqr_date IS NOT NULL
+          AND LEFT(lsn.schedual_date, 7) = #{yearMonth}
+          AND fee.del_flg     = 0
+        ORDER BY lsn.lesson_id ASC
+    </select>
+
+    <!--
+        前置检查：课费是否已结算
+        课费ID存在于支付表（t_info_lesson_pay）则返回 true
+    -->
+    <select id="checkIfFeeAlreadyPaid" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM t_info_lesson_pay
+        WHERE lsn_fee_id = #{lsnFeeId}
+    </select>
+
+    <!-- 更新课程表：lessonType 1 → 2 -->
+    <update id="updateLessonType">
+        UPDATE t_info_lesson
+        SET lesson_type = 2,
+            update_date = NOW()
+        WHERE lesson_id = #{lessonId}
+    </update>
+
+    <!-- 课费ID自动采番（调用数据库 nextval 函数） -->
+    <select id="getNextSequence" parameterType="map" statementType="CALLABLE">
+        {
+            #{parm_out,mode=OUT,jdbcType=INTEGER} = call nextval(#{parm_in,mode=IN})
+        }
+    </select>
+
+    <!--
+        INSERT 新课费记录
+        复制原课费表中 lsn_fee_id=srcLsnFeeId AND lesson_id=lessonId 的记录
+        lsn_fee_id 和 lesson_id 替换为新值，其他列全部从原记录复制
+    -->
+    <insert id="insertNewLsnFee">
+        INSERT INTO t_info_lesson_fee (
+            lsn_fee_id,
+            lesson_id,
+            lsn_month,
+            lsn_fee,
+            own_flg,
+            del_flg
+        )
+        SELECT
+            #{newLsnFeeId},
+            #{lessonId},
+            lsn_month,
+            lsn_fee,
+            own_flg,
+            del_flg
+        FROM t_info_lesson_fee
+        WHERE lsn_fee_id = #{srcLsnFeeId}
+          AND lesson_id  = #{lessonId}
+    </insert>
+
+    <!-- DELETE 原课费表中旧记录（指定 lesson_id + lsn_fee_id） -->
+    <delete id="deleteOldLsnFee">
+        DELETE FROM t_info_lesson_fee
+        WHERE lesson_id  = #{lessonId}
+          AND lsn_fee_id = #{lsnFeeId}
+    </delete>
+
+</mapper>
