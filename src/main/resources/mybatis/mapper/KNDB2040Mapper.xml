@@ -46,7 +46,7 @@
         WHERE subject_id = #{subjectId}
           AND del_flg = 0
           AND CAST(REGEXP_REPLACE(subject_sub_id, '[^0-9]', '') AS UNSIGNED)
-            > CAST(REGEXP_REPLACE(#{currentSubjectSubId}, '[^0-9]', '') AS UNSIGNED)
+            >= CAST(REGEXP_REPLACE(#{currentSubjectSubId}, '[^0-9]', '') AS UNSIGNED)
         ORDER BY CAST(REGEXP_REPLACE(subject_sub_id, '[^0-9]', '') AS UNSIGNED)
     </select>
 

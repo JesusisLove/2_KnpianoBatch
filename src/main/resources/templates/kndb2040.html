@@ -138,9 +138,8 @@
                         <div class="col-sm-6">
                             <select id="stuId" name="stuId" class="form-control">
                                 <option value="">── 请选择学生 ──</option>
-                                <option th:each="stu : ${studentList}"
-                                        th:value="${stu.stuId}"
-                                        th:text="${stu.stuId} + ' ' + ${stu.stuName}">
+                                <option th:each="stu : ${studentList}" th:value="${stu.stuId}"
+                                    th:text="${stu.stuId} + ' ' + ${stu.stuName}">
                                 </option>
                             </select>
                         </div>
@@ -203,7 +202,7 @@
                     <div class="divider"></div>
 
                     <!-- 升级后子科目信息 -->
-                    <p class="section-label text-muted">升级后子科目信息</p>
+                    <p class="section-label text-muted">升级后子科目信息（包括学生正在学习的当前子科目，只是修改子科目价格）</p>
 
                     <div class="form-group row">
                         <label class="col-sm-3 col-form-label section-label">升级后子科目</label>
@@ -234,13 +233,13 @@
                         <div class="col-sm-8">
                             <div class="price-group">
                                 <div class="price-monthly">
-                                    <input type="text" id="newLessonFeeAdjustedMonthly"
-                                           class="form-control" placeholder="月课费（选填）" disabled>
+                                    <input type="text" id="newLessonFeeAdjustedMonthly" class="form-control"
+                                        placeholder="月课费（选填）" disabled>
                                 </div>
                                 <span class="monthly-label">单价:</span>
                                 <div class="price-unit">
                                     <input type="text" id="newLessonFeeAdjustedInput" name="newLessonFeeAdjusted"
-                                           class="form-control" placeholder="单价（选填）" disabled>
+                                        class="form-control" placeholder="单价（选填）" disabled>
                                 </div>
                             </div>
                         </div>
@@ -257,18 +256,14 @@
                         <div class="col-sm-3">
                             <select id="startYear" name="startYear" class="form-control">
                                 <option th:each="y : ${#numbers.sequence(currentYear - 2, currentYear + 1)}"
-                                        th:value="${y}"
-                                        th:text="${y} + '年'"
-                                        th:selected="${y == currentYear}">
+                                    th:value="${y}" th:text="${y} + '年'" th:selected="${y == currentYear}">
                                 </option>
                             </select>
                         </div>
                         <div class="col-sm-3">
                             <select id="startMonth" name="startMonth" class="form-control">
-                                <option th:each="m : ${#numbers.sequence(1, 12)}"
-                                        th:value="${m}"
-                                        th:text="${m} + '月'"
-                                        th:selected="${m == currentMonth}">
+                                <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}" th:text="${m} + '月'"
+                                    th:selected="${m == currentMonth}">
                                 </option>
                             </select>
                         </div>
@@ -297,7 +292,8 @@
     </div>
 
     <!-- 确认执行 Modal -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content" style="border-radius: 12px; overflow: hidden;">
                 <div class="modal-header" style="background: linear-gradient(135deg, #f7971e, #ffd200);">
@@ -431,8 +427,8 @@
                         }
                         $select.prop('disabled', false);
                     }).fail(function () {
-                    alert('取得升级候补列表失败，请重试。');
-                });
+                        alert('取得升级候补列表失败，请重试。');
+                    });
             }).fail(function () {
                 alert('取得当前子科目信息失败，请重试。');
             });
