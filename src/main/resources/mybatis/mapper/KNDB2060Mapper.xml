@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.liu.knbatch.dao.KNDB2060Dao">
+
+    <!--
+        收集：本年度上满 43 节、且不在清单表里的学生 + 科目
+        ※ 复制自 knpiano 工程 Kn02F006EmptyLessonFeeMapper.xml 的 getStudentsReached43Lessons
+          修改 43 节判断规则时，两边需同时修改
+        ※ 与原 SQL 的差异：去掉累计课程数列（批处理不使用）；追加 NOT EXISTS（清单表）
+    -->
+    <select id="getNewlyReachedStudents" resultType="com.liu.knbatch.entity.KNDB2060Entity">
+        WITH monthly_summary AS (
+            -- 计算每个学生每月的课程数（排除临时课程）
+            SELECT
+                vLsn.stu_id,
+                vLsn.stu_name,
+                vLsn.subject_id,
+                vLsn.subject_name,
+                vLsn.lsn_month,
+                SUM(vLsn.lsn_count) AS monthly_count
+            FROM v_info_lesson_fee_connect_lsn_and_extraToScheDataCorrect vLsn
+            WHERE vLsn.lesson_type = 1  -- 按月交费的学生
+              AND vLsn.lsn_month BETWEEN CONCAT(#{year}, '-01') AND CONCAT(#{year}, '-12')  -- 指定年度
+              AND vLsn.lesson_id NOT LIKE 'kn-lsn-tmp-%'  -- 排除临时课程（虚拟课不计入43节）
+            GROUP BY vLsn.stu_id, vLsn.stu_name, vLsn.subject_id, vLsn.subject_name, vLsn.lsn_month
+        ),
+        cumulative_summary AS (
+            -- 计算累计课程数，找出达到43节课的月份
+            SELECT
+                stu_id,
+                stu_name,
+                subject_id,
+                subject_name,
+                lsn_month,
+                monthly_count,
+                SUM(monthly_count) OVER (
+                    PARTITION BY stu_id, subject_id
+                    ORDER BY lsn_month
+                ) AS cumulative_count
+            FROM monthly_summary
+        )
+        SELECT
+            cs.stu_id AS stuId,
+            cs.stu_name AS stuName,
+            cs.subject_id AS subjectId,
+            cs.subject_name AS subjectName,
+            CAST(SUBSTRING(MIN(CASE WHEN cs.cumulative_count >= 43 THEN cs.lsn_month END), 6, 2) AS UNSIGNED) AS monthsCompleted,
+            (
+                SELECT GROUP_CONCAT(DISTINCT MONTH(tmp.schedual_date))
+                FROM t_info_lesson_tmp tmp
+                WHERE tmp.stu_id = cs.stu_id
+                  AND tmp.subject_id = cs.subject_id
+                  AND YEAR(tmp.schedual_date) = #{year}
+            ) AS generatedMonths
+        FROM cumulative_summary cs
+        WHERE cs.cumulative_count >= 43  -- 只选择达到43节课的记录
+          -- 追加：本年度已处理过的学生 + 科目除外
+          AND NOT EXISTS (
+              SELECT 1
+              FROM t_batch_empty_month_stu_list lst
+              WHERE lst.stu_id = cs.stu_id
+                AND lst.subject_id = cs.subject_id
+                AND lst.lsn_year = #{year}
+          )
+        GROUP BY cs.stu_id, cs.stu_name, cs.subject_id, cs.subject_name
+        ORDER BY cs.stu_name, cs.subject_id
+    </select>
+
+    <!-- 生成：调用存储过程（与 knpiano 工程 Web 画面共用） -->
+    <update id="callInsertTmpLessonInfo" statementType="CALLABLE">
+        {call sp_insert_tmp_lesson_info(
+            #{stuId, mode=IN, jdbcType=VARCHAR},
+            #{subjectId, mode=IN, jdbcType=VARCHAR},
+            #{targetDate, mode=IN, jdbcType=VARCHAR}
+        )}
+    </update>
+
+    <!-- 登记清单表（create_date 由列默认值自动设置） -->
+    <insert id="insertEmptyMonthStuList">
+        INSERT INTO t_batch_empty_month_stu_list (
+            stu_id,
+            subject_id,
+            lsn_year,
+            months_completed,
+            empty_months
+        ) VALUES (
+            #{stuId},
+            #{subjectId},
+            #{lsnYear},
+            #{monthsCompleted},
+            #{emptyMonths}
+        )
+    </insert>
+
+</mapper>
